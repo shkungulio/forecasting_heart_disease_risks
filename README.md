@@ -1,1 +1,1 @@
-# Forecasting Heart Diseases Risks
+# Forecasting Heart Disease Risks

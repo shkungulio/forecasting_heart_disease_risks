@@ -48,19 +48,78 @@ for (pkg in required_pkgs) {
 <br>
 
 ## Business Understanding
-
+### Problem statement
+To develop models for an insurance company using the Heart Disease dataset from the UCI Machine Learning Repository. The goal is to predict the likelihood of a person developing heart disease, which would help the insurance company estimate health risks and adjust premiums accordingly.
 
 
 <br>
 
 ## Data Understanding
+The dataset contains various features related to patients' health and demographic information. We will explore the dataset to understand its structure and relationships between variables.
 
+### Data dictionary
+The dataset contains 14 key attributes that are either numerical or categorical.
+
+| Attribute	| Type	| Description	| Constraints/ Rules |
+|:----------|:------|:------------|:-------------------|
+| `age`	| Numerical	| The age of the patient in years	| Range: 29-77 (based on dataset statistics) |
+| `sex`	| Categorical	| The gender of the patient	| Values: 1 = Male, 0 = Female |
+| `cp` | Categorical	| Type of chest pain experienced by the patient | 	Values: 1 = Typical angina, 2 = Atypical angina, 3 = Non-anginal pain, 4 = Asymptomatic |
+| `trestbps`	| Numerical	| Resting blood pressure of the patient, measured in mmHg	| Range: Typically, between 94 and 200 mmHg |
+| `chol` | Numerical	| Serum cholesterol level in mg/dl | Range: Typically, between 126 and 564 mg/dl |
+| `fbs`	| Categorical	| Fasting blood sugar level > 120 mg/dl | 	Values: 1 = True, 0 = False |
+| `restecg` | Categorical	| Results of the patient’s resting electrocardiogram	| Values: 0 = Normal, 1 = ST-T wave abnormality, 2 = Probable or definite left ventricular hypertrophy |
+| `thalach`	| Numerical	| Maximum heart rate achieved during a stress test | Range: Typically, between 71 and 202 bpm |
+| `exang`	| Categorical	| Whether the patient experiences exercise-induced angina	| Values: 1 = Yes, 0 = No |
+| `oldpeak`	| Numerical	| ST depression induced by exercise relative to rest (an ECG measure)	| Range: 0.0 to 6.2 (higher values indicate more severe abnormalities) |
+| `slope`	| Categorical	| Slope of the peak exercise ST segment	| Values: 1 = Upsloping, 2 = Flat, 3 = Downsloping |
+| `ca` | Numerical	| Number of major vessels colored by fluoroscopy	| Range: 0-3 |
+| `thal` | Categorical	| Blood disorder variable related to thalassemia	| Values: 3 = Normal, 6 = Fixed defect, 7 = Reversible defect |
+| `target` | Categorical	| Diagnosis of heart disease	| Values: 0 = No heart disease, 1 = Presence of heart disease |
 
 
 <br>
 
 ## Data Preparation
+### Data loading
+Load the dataset from the UCI website to memory
+```{r}
+# Load the dataset
+url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
 
+# Read the dataset into a dataframe
+Heart.df <- read.csv(text = getURL(url), header = FALSE, na.strings = "?")
+```
+
+Rename the columns into a meaningful column names
+```{r}
+colnames(Heart.df) <- c("age", "sex", "cp", "trestbps", "chol", "fbs",
+                        "restecg", "thalach", "exang", "oldpeak", 
+                        "slope", "ca", "thal", "target")
+```
+
+Display dimensions of the dataset
+```{r}
+dim(Heart.df)
+```
+
+Display the first six rows of the dataset
+```{r}
+head(Heart.df)
+```
+
+Display the structure of the dataframe
+```{r}
+str(Heart.df)
+```
+
+Display the statistical summary of the dataframe
+```{r}
+summary(Heart.df)
+```
+
+### Data preprocessing
+We will preprocess the data by handling missing values, encoding categorical variables, and scaling numerical features.
 
 
 <br>

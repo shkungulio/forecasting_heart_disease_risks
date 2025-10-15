@@ -20,8 +20,8 @@ output:
 ---
 
 
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=6)
 
 # Set default CRAN mirror
 options(repos = c(CRAN = "https://cloud.r-project.org"))
@@ -110,7 +110,7 @@ head(Heart.df)
 
 Display the structure of the dataframe
 ```{r}
-str(Heart.df)
+glimpse(Heart.df)
 ```
 
 Display the statistical summary of the dataframe
@@ -120,6 +120,101 @@ summary(Heart.df)
 
 ### Data preprocessing
 We will preprocess the data by handling missing values, encoding categorical variables, and scaling numerical features.
+
+Convert binary variables to 0's and 1's.
+```{r}
+Heart.df$target <- ifelse(Heart.df$target > 0, 1, 0)
+Heart.df$sex <- ifelse(Heart.df$sex > 0, 1, 0)
+Heart.df$fbs <- ifelse(Heart.df$fbs > 0, 1, 0)
+Heart.df$exang <- ifelse(Heart.df$exang > 0, 1, 0)
+```
+
+Handle missing values in `ca` and `thal` variables using mean/mode imputation.
+```{r}
+Heart.df$ca[is.na(Heart.df$ca)] <- median(Heart.df$ca, na.rm = TRUE)
+Heart.df$ca[Heart.df$ca == "?"] <- median(Heart.df$ca, na.rm = TRUE)
+#Heart.df$thal[is.na(Heart.df$thal)] <- median(Heart.df$thal, na.rm = TRUE)
+Heart.df$ca[Heart.df$thal == "?"] <- median(Heart.df$thal, na.rm = TRUE)
+```
+
+Check for missing values if still exist
+```{r}
+sapply(Heart.df, function(x) sum(is.na(x)))
+```
+
+Check for duplicate entries and print them if they exist.
+```{r}
+dupes <- Heart.df[duplicated(Heart.df) | duplicated(Heart.df, fromLast = TRUE), ]
+# Print or inspect the duplicate entries
+print(dupes)
+```
+
+Convert categorical variables to factor.
+```{r}
+Heart.df$sex <- factor(Heart.df$sex, 
+                       levels = c(0, 1), 
+                       labels = c("Female", "Male"))
+Heart.df$cp <- factor(Heart.df$cp, 
+                      levels = c(1, 2, 3, 4), 
+                      labels = c("Typical Angina", "Atypical Angina", 
+                                 "Non-Angina", "Asymptomatic"))
+Heart.df$fbs <- factor(Heart.df$fbs, 
+                       levels = c(0, 1), 
+                       labels = c("False", "True"))
+Heart.df$restecg <- factor(Heart.df$restecg, 
+                           levels = c(0, 1, 2), 
+                           labels = c("Normal", "Wave-abnormality", "Probable"))
+Heart.df$exang <- factor(Heart.df$exang, 
+                         levels = c(0, 1), 
+                         labels = c("No", "Yes"))
+Heart.df$slope <- factor(Heart.df$slope, 
+                         levels = c(1, 2, 3), 
+                         labels = c("Upsloping", "Flat", "Downsloping"))
+Heart.df$thal <- factor(Heart.df$thal, 
+                        levels = c(3, 6, 7), 
+                        labels = c("Normal", "Fixed Defect", "Reversible"))
+Heart.df$target <- factor(Heart.df$target, 
+                          levels = c(0, 1), 
+                          labels = c("No", "Yes"))
+```
+
+### Exploratory data analysis
+Plot distribution of `target` variable.
+```{r}
+ggplot(Heart.df, aes(x=target, fill=target)) +
+  geom_bar() + theme_test() +
+  labs(title="Distribution of Heart Disease",
+       x = "Heart Disease", fill = "Heart Disease")
+```
+
+Visualize `age` distribution by heart disease presence.
+```{r}
+ggplot(Heart.df, aes(x = age, fill = as.factor(target))) + 
+  geom_histogram(bins = 15) + theme_test() +
+  labs(title = "Age Distribution by Heart Disease", 
+       x = "Age", fill = "Heart Disease")
+```
+
+Visualize `chol` distribution by heart disease.
+```{r}
+ggplot(Heart.df, aes(x = chol, fill = target)) + 
+  geom_histogram(bins = 15) + theme_test() +
+  labs(title = "Cholesterol Distribution by Heart Disease", 
+       x = "Cholesterol", fill = "Heart Disease")
+```
+
+Visualize `tresbps` distribution by heart disease.
+```{r}
+ggplot(Heart.df, aes(x = trestbps, fill = as.factor(target))) + 
+  geom_histogram(bins = 15) + theme_test() +
+  labs(title = "Resting Blood Pressure Distribution by Heart Disease", 
+       x = "Resting Blood Pressure", fill = "Heart Disease")
+```
+
+
+
+
+
 
 
 <br>

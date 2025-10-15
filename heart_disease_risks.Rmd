@@ -1,0 +1,86 @@
+---
+title: "Forecasting Heart Disease Risks"
+output: 
+  html_document:
+    theme:
+      bg: "#1b1b1b"
+      fg: "#FDF7F7" 
+      primary: "#98002E"
+      base_font:
+        google: Montserrat
+      code_font:
+        google: JetBrains Mono
+    highlight: espresso
+    css: "resources/styles.css"
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+---
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+# Set default CRAN mirror
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+#Install the following libraries if required
+# List of required packages
+required_pkgs <- c("tidyverse", "RCurl", "caret", "randomForest",
+                   "e1071", "rpart", "corrplot", "GGally", "pROC")
+
+# Install and load each package
+for (pkg in required_pkgs) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg)
+  }
+  library(pkg, character.only = TRUE)
+}
+
+```
+
+## Introduction
+
+
+
+<br>
+
+## Business Understanding
+
+
+
+<br>
+
+## Data Understanding
+
+
+
+<br>
+
+## Data Preparation
+
+
+
+<br>
+
+## Modeling
+
+
+
+<br>
+
+## Evaluation
+
+
+
+<br>
+
+## Deployment
+
+
+<br>
+
+## Conclusion
+

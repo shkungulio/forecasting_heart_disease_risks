@@ -1,5 +1,10 @@
 ---
 title: "Forecasting Heart Disease Risks"
+author: "Seif Kungulio"
+date: "`r Sys.Date()`"
+description: "An analysis to predict heart disease risks using machine learning techniques."
+categories: [Data Science, Machine Learning, Healthcare]
+tags: [R, Machine Learning, Healthcare, Data Analysis]
 output: 
   html_document:
     theme:
@@ -17,11 +22,14 @@ output:
     toc_float:
       collapsed: true
       smooth_scroll: false
+  pdf_document:
+    toc: true
+    toc_depth: 3
 ---
 
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=6)
+knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=8)
 
 # Set default CRAN mirror
 options(repos = c(CRAN = "https://cloud.r-project.org"))
@@ -57,6 +65,24 @@ To develop models for an insurance company using the Heart Disease dataset from 
 ## Data Understanding
 The dataset contains various features related to patients' health and demographic information. We will explore the dataset to understand its structure and relationships between variables.
 
+### Data description
+The Heart Disease dataset from the UCI Machine Learning Repository contains 303 instances and 14 attributes. These attributes include both numerical and categorical variables related to patients' health metrics and demographic information. The target variable indicates the presence or absence of heart disease. These attributes are:
+
+1. `age`: Age of the patient (numeric)
+2. `sex`: Gender of the patient (1 = male, 0 = female)
+3. `cp`: Chest pain type (categorical: 1-4)
+4. `trestbps`: Resting blood pressure (numeric)
+5. `chol`: Serum cholesterol (numeric)
+6. `fbs`: Fasting blood sugar (1 = true, 0 = false)
+7. `restecg`: Resting electrocardiographic results (categorical)
+8. `thalach`: Maximum heart rate achieved (numeric)
+9. `exang`: Exercise-induced angina (1 = yes, 0 = no)
+10. `oldpeak`: ST depression induced by exercise (numeric)
+11. `slope`: The slope of the peak exercise ST segment (categorical)
+12. `ca`: Number of major vessels (0-3, numeric)
+13. `thal`: Thalassemia (categorical: 1 = normal, 2 = fixed defect, 3 = reversible defect)
+14. `target`: Heart disease (1 = disease, 0 = no disease)
+
 ### Data dictionary
 The dataset contains 14 key attributes that are either numerical or categorical.
 
@@ -77,6 +103,13 @@ The dataset contains 14 key attributes that are either numerical or categorical.
 | `thal` | Categorical	| Blood disorder variable related to thalassemia	| Values: 3 = Normal, 6 = Fixed defect, 7 = Reversible defect |
 | `target` | Categorical	| Diagnosis of heart disease	| Values: 0 = No heart disease, 1 = Presence of heart disease |
 
+### Initial observations
+* The dataset contains a mix of numerical and categorical variables.
+* Some variables may require preprocessing, such as handling missing values and encoding categorical variables.
+* Missing Values: Some fields like ca and thal may have missing values or unknown entries (‘?’).
+* Data Types: Some categorical variables are encoded numerically and will need to be interpreted correctly during analysis.
+* Class Imbalance: Preliminary checks suggest the dataset is relatively balanced between presence and absence of disease, but this will be verified.
+* Outliers: Numerical fields such as chol (cholesterol) and trestbps (blood pressure) may have outliers that need to be detected and considered in analysis.
 
 <br>
 
@@ -121,7 +154,8 @@ summary(Heart.df)
 ### Data preprocessing
 We will preprocess the data by handling missing values, encoding categorical variables, and scaling numerical features.
 
-Convert binary variables to 0's and 1's.
+According to the data dictionary, the following attributes should be have binary variables: `sex`, `fbs`, `exang`, and `target`. But, some shows to have values besides 0’s and 1’s.
+Let’s convert binary variables to (0, 1)
 ```{r}
 Heart.df$target <- ifelse(Heart.df$target > 0, 1, 0)
 Heart.df$sex <- ifelse(Heart.df$sex > 0, 1, 0)
@@ -145,71 +179,136 @@ sapply(Heart.df, function(x) sum(is.na(x)))
 Check for duplicate entries and print them if they exist.
 ```{r}
 dupes <- Heart.df[duplicated(Heart.df) | duplicated(Heart.df, fromLast = TRUE), ]
-# Print or inspect the duplicate entries
 print(dupes)
 ```
 
 Convert categorical variables to factor.
+Define a list of categorical columns with their levels and labels
 ```{r}
-Heart.df$sex <- factor(Heart.df$sex, 
-                       levels = c(0, 1), 
-                       labels = c("Female", "Male"))
-Heart.df$cp <- factor(Heart.df$cp, 
-                      levels = c(1, 2, 3, 4), 
-                      labels = c("Typical Angina", "Atypical Angina", 
-                                 "Non-Angina", "Asymptomatic"))
-Heart.df$fbs <- factor(Heart.df$fbs, 
-                       levels = c(0, 1), 
-                       labels = c("False", "True"))
-Heart.df$restecg <- factor(Heart.df$restecg, 
-                           levels = c(0, 1, 2), 
-                           labels = c("Normal", "Wave-abnormality", "Probable"))
-Heart.df$exang <- factor(Heart.df$exang, 
-                         levels = c(0, 1), 
-                         labels = c("No", "Yes"))
-Heart.df$slope <- factor(Heart.df$slope, 
-                         levels = c(1, 2, 3), 
-                         labels = c("Upsloping", "Flat", "Downsloping"))
-Heart.df$thal <- factor(Heart.df$thal, 
-                        levels = c(3, 6, 7), 
-                        labels = c("Normal", "Fixed Defect", "Reversible"))
-Heart.df$target <- factor(Heart.df$target, 
-                          levels = c(0, 1), 
-                          labels = c("No", "Yes"))
+categorical_columns <- list(
+  sex = list(levels = c(0, 1), labels = c("Female", "Male")),
+  cp = list(levels = c(1, 2, 3, 4), labels = c("Typical Angina", 
+                                               "Atypical Angina", "Non-Angina",
+                                               "Asymptomatic")),
+  fbs = list(levels = c(0, 1), labels = c("False", "True")),
+  restecg = list(levels = c(0, 1, 2), labels = c("Normal", "Wave-abnormality", "Probable")),
+  exang = list(levels = c(0, 1), labels = c("No", "Yes")),
+  slope = list(levels = c(1, 2, 3), labels = c("Upsloping", "Flat", 
+                                               "Downsloping")),
+  thal = list(levels = c(3, 6, 7), labels = c("Normal", "Fixed Defect", "Reversible")),
+  target = list(levels = c(1, 0), labels = c("Yes", "No"))
+)
+```
+
+Apply the factor transformation using a for-loop.
+```{r}
+for (col in names(categorical_columns)) {
+  Heart.df[[col]] <- factor(Heart.df[[col]], 
+                            levels = categorical_columns[[col]]$levels, 
+                            labels = categorical_columns[[col]]$labels)
+}
+```
+
+Handle outliers
+Apply multiple filters to identify and handle outliers in numerical variables.
+```{r}
+Heart.df <- Heart.df[Heart.df$age > 40 &
+                       Heart.df$trestbps < 170 &
+                       Heart.df$chol < 340 &
+                       Heart.df$chol > 150 &
+                       Heart.df$thalach > 115 &
+                       Heart.df$oldpeak < 2.4, ]
+```
+
+### Helper functions
+
+**Function to create Box plots**
+```{r}
+HeartDiseaseBoxplot <- function(var1, var2) {
+  ggplot(Heart.df, aes(x = .data[[var1]],
+                       y = .data[[var2]],
+                       fill = .data[[var1]])) +
+    geom_boxplot() + theme_test() +
+    labs(title = paste("Boxplot of", var2, "by", var1),
+         x = var1, y = var2, fill = "Heart Disease")
+}
+```
+
+**Function to create Bar plots**
+```{r}
+HeartDiseaseBar <- function(var) {
+  ggplot(Heart.df, aes(x = .data[[var]], fill = target)) +
+    geom_bar(position = "dodge") + theme_test() +
+    labs(title = paste("Distribution of Heart Disease by", var),
+         x = var, fill = "Heart Disease")
+}
+```
+
+**Function to create Histograms**
+```{r}
+HeartDiseaseHist <- function(var1) {
+  ggplot(Heart.df, aes(x = .data[[var1]], fill = target)) +
+    geom_histogram(bins = 15) + theme_test() +
+    labs(title = paste("Distribution of", var1),
+         x = var1, fill = "Heart Disease")
+}
+```
+
+**Function to create Scatter plots**
+```{r}
+HeartDiseaseScatter <- function(point1, point2){
+  ggplot(Heart.df, aes(x = .data[[point1]],
+                       y = .data[[point2]],
+                       color = target)) +
+    geom_point(size = 2) + theme_test() +
+    geom_smooth(method = "lm", se = FALSE, color = "blue", formula = y ~ x) +
+    labs(title = paste("Scatterplot of", point1, "by", point2),
+       x = point1, y = point2, color = "Heart Disease")
+}
 ```
 
 ### Exploratory data analysis
-Plot distribution of `target` variable.
+**Boxplots for Numerical Variables**
 ```{r}
-ggplot(Heart.df, aes(x=target, fill=target)) +
+HeartDiseaseBoxplot("target", "age")
+HeartDiseaseBoxplot("target", "trestbps")
+HeartDiseaseBoxplot("target", "chol")
+HeartDiseaseBoxplot("target", "thalach")
+HeartDiseaseBoxplot("target", "oldpeak")
+```
+
+**Barplots for Categorical Variables**
+
+Heart disease distribution
+```{r}
+ggplot(Heart.df, aes(x=target, fill=target))+
   geom_bar() + theme_test() +
-  labs(title="Distribution of Heart Disease",
-       x = "Heart Disease", fill = "Heart Disease")
+  ggtitle("Distribution of Heart Disease") +
+  labs(x = "Heart Disease", fill = "Heart Disease")
 ```
 
-Visualize `age` distribution by heart disease presence.
+Visualize distribution of categorical variables by heart disease presence.
 ```{r}
-ggplot(Heart.df, aes(x = age, fill = as.factor(target))) + 
-  geom_histogram(bins = 15) + theme_test() +
-  labs(title = "Age Distribution by Heart Disease", 
-       x = "Age", fill = "Heart Disease")
+HeartDiseaseBar("sex")
+HeartDiseaseBar("cp")
+HeartDiseaseBar("fbs")
+HeartDiseaseBar("restecg")
+HeartDiseaseBar("exang")
+HeartDiseaseBar("slope")
+HeartDiseaseBar("thal")
 ```
 
-Visualize `chol` distribution by heart disease.
+**Scatterplots for Numerical Variables**
 ```{r}
-ggplot(Heart.df, aes(x = chol, fill = target)) + 
-  geom_histogram(bins = 15) + theme_test() +
-  labs(title = "Cholesterol Distribution by Heart Disease", 
-       x = "Cholesterol", fill = "Heart Disease")
+HeartDiseaseScatter("age", "oldpeak")
+HeartDiseaseScatter("age", "chol")
+HeartDiseaseScatter("age", "trestbps")
+HeartDiseaseScatter("age", "thalach")
+HeartDiseaseScatter("chol", "thalach")
+HeartDiseaseScatter("trestbps", "chol")
+HeartDiseaseScatter("thalach", "oldpeak")
 ```
 
-Visualize `tresbps` distribution by heart disease.
-```{r}
-ggplot(Heart.df, aes(x = trestbps, fill = as.factor(target))) + 
-  geom_histogram(bins = 15) + theme_test() +
-  labs(title = "Resting Blood Pressure Distribution by Heart Disease", 
-       x = "Resting Blood Pressure", fill = "Heart Disease")
-```
 
 
 

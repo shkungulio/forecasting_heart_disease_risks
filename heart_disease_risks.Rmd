@@ -1,27 +1,11 @@
 ---
-title: "Forecasting Heart Disease Risks"
+title: "FORECASTING HEART DISEASE RISKS"
 author: "Seif Kungulio"
 date: "`r Sys.Date()`"
 description: "An analysis to predict heart disease risks using machine learning techniques."
 categories: [Data Science, Machine Learning, Healthcare]
 tags: [R, Machine Learning, Healthcare, Data Analysis]
 output: 
-  html_document:
-    theme:
-      bg: "#1b1b1b"
-      fg: "#FDF7F7" 
-      primary: "#98002E"
-      base_font:
-        google: Montserrat
-      code_font:
-        google: JetBrains Mono
-    highlight: espresso
-    css: "resources/styles.css"
-    toc: true
-    toc_depth: 3
-    toc_float:
-      collapsed: true
-      smooth_scroll: false
   pdf_document:
     toc: true
     toc_depth: 3
@@ -29,7 +13,7 @@ output:
 
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=8)
+knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=6)
 
 # Set default CRAN mirror
 options(repos = c(CRAN = "https://cloud.r-project.org"))
@@ -47,25 +31,26 @@ for (pkg in required_pkgs) {
   library(pkg, character.only = TRUE)
 }
 
+theme_set(theme_gray())
 ```
 
-## Introduction
+# Introduction
 
 
 
 <br>
 
-## Business Understanding
-### Problem statement
+# Business Understanding
+## Problem statement
 To develop models for an insurance company using the Heart Disease dataset from the UCI Machine Learning Repository. The goal is to predict the likelihood of a person developing heart disease, which would help the insurance company estimate health risks and adjust premiums accordingly.
 
 
 <br>
 
-## Data Understanding
+# Data Understanding
 The dataset contains various features related to patients' health and demographic information. We will explore the dataset to understand its structure and relationships between variables.
 
-### Data description
+## Data description
 The Heart Disease dataset from the UCI Machine Learning Repository contains 303 instances and 14 attributes. These attributes include both numerical and categorical variables related to patients' health metrics and demographic information. The target variable indicates the presence or absence of heart disease. These attributes are:
 
 1. `age`: Age of the patient (numeric)
@@ -83,7 +68,7 @@ The Heart Disease dataset from the UCI Machine Learning Repository contains 303 
 13. `thal`: Thalassemia (categorical: 1 = normal, 2 = fixed defect, 3 = reversible defect)
 14. `target`: Heart disease (1 = disease, 0 = no disease)
 
-### Data dictionary
+## Data dictionary
 The dataset contains 14 key attributes that are either numerical or categorical.
 
 | Attribute	| Type	| Description	| Constraints/ Rules |
@@ -103,7 +88,7 @@ The dataset contains 14 key attributes that are either numerical or categorical.
 | `thal` | Categorical	| Blood disorder variable related to thalassemia	| Values: 3 = Normal, 6 = Fixed defect, 7 = Reversible defect |
 | `target` | Categorical	| Diagnosis of heart disease	| Values: 0 = No heart disease, 1 = Presence of heart disease |
 
-### Initial observations
+## Initial observations
 * The dataset contains a mix of numerical and categorical variables.
 * Some variables may require preprocessing, such as handling missing values and encoding categorical variables.
 * Missing Values: Some fields like ca and thal may have missing values or unknown entries (‘?’).
@@ -113,8 +98,8 @@ The dataset contains 14 key attributes that are either numerical or categorical.
 
 <br>
 
-## Data Preparation
-### Data loading
+# Data Preparation
+## Data loading
 Load the dataset from the UCI website to memory
 ```{r}
 # Load the dataset
@@ -151,7 +136,7 @@ Display the statistical summary of the dataframe
 summary(Heart.df)
 ```
 
-### Data preprocessing
+## Data preprocessing
 We will preprocess the data by handling missing values, encoding categorical variables, and scaling numerical features.
 
 According to the data dictionary, the following attributes should be have binary variables: `sex`, `fbs`, `exang`, and `target`. But, some shows to have values besides 0’s and 1’s.
@@ -209,18 +194,7 @@ for (col in names(categorical_columns)) {
 }
 ```
 
-Handle outliers
-Apply multiple filters to identify and handle outliers in numerical variables.
-```{r}
-Heart.df <- Heart.df[Heart.df$age > 40 &
-                       Heart.df$trestbps < 170 &
-                       Heart.df$chol < 340 &
-                       Heart.df$chol > 150 &
-                       Heart.df$thalach > 115 &
-                       Heart.df$oldpeak < 2.4, ]
-```
-
-### Helper functions
+## Helper functions
 
 **Function to create Box plots**
 ```{r}
@@ -228,7 +202,7 @@ HeartDiseaseBoxplot <- function(var1, var2) {
   ggplot(Heart.df, aes(x = .data[[var1]],
                        y = .data[[var2]],
                        fill = .data[[var1]])) +
-    geom_boxplot() + theme_test() +
+    geom_boxplot() + 
     labs(title = paste("Boxplot of", var2, "by", var1),
          x = var1, y = var2, fill = "Heart Disease")
 }
@@ -238,7 +212,7 @@ HeartDiseaseBoxplot <- function(var1, var2) {
 ```{r}
 HeartDiseaseBar <- function(var) {
   ggplot(Heart.df, aes(x = .data[[var]], fill = target)) +
-    geom_bar(position = "dodge") + theme_test() +
+    geom_bar(position = "dodge") +
     labs(title = paste("Distribution of Heart Disease by", var),
          x = var, fill = "Heart Disease")
 }
@@ -248,7 +222,7 @@ HeartDiseaseBar <- function(var) {
 ```{r}
 HeartDiseaseHist <- function(var1) {
   ggplot(Heart.df, aes(x = .data[[var1]], fill = target)) +
-    geom_histogram(bins = 15) + theme_test() +
+    geom_histogram(bins = 15) +
     labs(title = paste("Distribution of", var1),
          x = var1, fill = "Heart Disease")
 }
@@ -260,29 +234,78 @@ HeartDiseaseScatter <- function(point1, point2){
   ggplot(Heart.df, aes(x = .data[[point1]],
                        y = .data[[point2]],
                        color = target)) +
-    geom_point(size = 2) + theme_test() +
+    geom_point(size = 2) +
     geom_smooth(method = "lm", se = FALSE, color = "blue", formula = y ~ x) +
     labs(title = paste("Scatterplot of", point1, "by", point2),
        x = point1, y = point2, color = "Heart Disease")
 }
 ```
 
-### Exploratory data analysis
-**Boxplots for Numerical Variables**
+## Exploratory data analysis
+### **Boxplots for numerical variables**<br>
+
+I used boxplots to visually examine the distribution of key continuous health indicators — such as age, resting blood pressure (trestbps), cholesterol (chol), maximum heart rate (thalach), and ST depression (oldpeak) — across the binary target variable (Heart Disease: Yes / No).
+Boxplots were chosen because they efficiently highlight differences in central tendency (median), variability (IQR), and the presence of potential outliers between patients with and without heart disease.
+
+**Boxplot of Age by Heart Disease**
 ```{r}
 HeartDiseaseBoxplot("target", "age")
+```
+This boxplot compares patients’ ages across those with and without heart disease. The median age of patients diagnosed with heart disease is slightly higher than that of those without the condition. The interquartile range (IQR) indicates moderate variability in both groups, though patients above 60 years tend to be more represented among the “Yes” category. This supports the well-established medical understanding that age is a key risk factor — as individuals grow older, arterial stiffening, accumulated cholesterol, and other degenerative processes increase the probability of heart disease onset.
+
+**Boxplot of Resting Blood Pressure (trestbps) by Heart Disease**
+```{r}
 HeartDiseaseBoxplot("target", "trestbps")
+```
+The resting blood pressure distribution reveals higher median values among patients with heart disease. Several outliers are visible in both groups, but those diagnosed with heart disease show a wider spread and higher upper quartile range. This pattern suggests that elevated blood pressure (hypertension) is correlated with higher cardiac risk, consistent with clinical evidence linking high resting systolic pressure to cardiovascular complications. However, some overlap between groups also indicates that blood pressure alone may not be sufficient for classification without considering other risk variables.
+
+**Boxplot of Cholesterol (chol) by Heart Disease**
+```{r}
 HeartDiseaseBoxplot("target", "chol")
+```
+Serum cholesterol levels demonstrate a wide distribution, with notable outliers at very high cholesterol values (above 400 mg/dl). Patients with heart disease show a slightly higher median cholesterol level, though the difference between the two groups is less pronounced compared to blood pressure. This indicates that while cholesterol is an important indicator, it may not linearly predict disease presence in isolation. The large spread also suggests variability due to genetic factors, diet, or lifestyle influences among patients.
+
+**Boxplot of Maximum Heart Rate Achieved (thalach) by Heart Disease**
+```{r}
 HeartDiseaseBoxplot("target", "thalach")
+```
+This boxplot displays an inverse relationship between maximum heart rate and heart disease presence. Patients without heart disease generally achieve higher maximum heart rates, whereas those with the condition tend to have lower values and a tighter IQR. This observation aligns with medical reasoning — reduced heart rate response during exercise can indicate compromised cardiovascular function or reduced cardiac efficiency. It reinforces the role of thalach (maximum heart rate achieved) as a strong negative predictor of heart disease.
+
+**Boxplot of ST Depression (oldpeak) by Heart Disease**
+```{r}
 HeartDiseaseBoxplot("target", "oldpeak")
 ```
+The ST depression variable (oldpeak) shows a distinct separation between the two groups. Patients with heart disease exhibit higher median oldpeak values, suggesting greater ST depression during exercise testing. This is clinically significant — elevated oldpeak values typically reflect myocardial ischemia (reduced blood flow to the heart muscle during stress). The distribution for the disease-positive group also displays a wider range and several high-value outliers, further underscoring oldpeak as a powerful diagnostic indicator in detecting ischemic patterns associated with heart disease.
 
-**Barplots for Categorical Variables**
+**Overall boxplots observations:**
 
-Heart disease distribution
+Across all boxplots, the EDA reveals that:
+* Age, resting blood pressure, and cholesterol are positively associated with heart disease risk.
+* Maximum heart rate (thalach) and ST depression (oldpeak) are particularly differentiating indicators — the former being lower and the latter being higher among heart disease patients.
+* The presence of outliers in several metrics (especially cholesterol and blood pressure) suggests that individual variability or external lifestyle factors play a non-negligible role.
+* Collectively, these patterns highlight the multifactorial nature of cardiovascular disease, where no single biomarker suffices — but a combination provides stronger predictive power for modeling.
+
+**Handle outliers**
+
+Apply multiple filters to identify and handle outliers in numerical variables.
+```{r}
+Heart.df <- Heart.df[Heart.df$age > 40 &
+                       Heart.df$trestbps < 170 &
+                       Heart.df$chol < 340 &
+                       Heart.df$chol > 150 &
+                       Heart.df$thalach > 115 &
+                       Heart.df$oldpeak < 2.4, ]
+```
+
+
+
+
+### **Barplots for categorical variables**
+
+**Heart disease distribution**
 ```{r}
 ggplot(Heart.df, aes(x=target, fill=target))+
-  geom_bar() + theme_test() +
+  geom_bar() +
   ggtitle("Distribution of Heart Disease") +
   labs(x = "Heart Disease", fill = "Heart Disease")
 ```
@@ -309,8 +332,35 @@ HeartDiseaseScatter("trestbps", "chol")
 HeartDiseaseScatter("thalach", "oldpeak")
 ```
 
+**Histograms for Numerical Variables**
+```{r}
+HeartDiseaseHist("age")
+HeartDiseaseHist("trestbps")
+HeartDiseaseHist("chol")
+HeartDiseaseHist("thalach")
+HeartDiseaseHist("oldpeak")
+```
 
+**Pairwise correlation plot for numerical variables**
+```{r}
+ggpairs(Heart.df[, c("age", "trestbps", "chol", 
+                     "thalach", "oldpeak", "target")], 
+        aes(color = target, fill = target))
+```
 
+**Correlation matrix for numerical variables**
+```{r}
+# Selecting only continuous variables
+continuous_vars <- c("age", "trestbps", "chol", "thalach", "oldpeak")
+continuous_data <- Heart.df %>% select(all_of(continuous_vars))
+
+# Calculating correlation matrix
+correlation_matrix <- cor(continuous_data)
+
+# Plotting the correlation matrix
+corrplot(correlation_matrix, method = "circle",
+         type = "lower", tl.col = "black")
+```
 
 
 
@@ -318,22 +368,22 @@ HeartDiseaseScatter("thalach", "oldpeak")
 
 <br>
 
-## Modeling
+# Modeling
 
 
 
 <br>
 
-## Evaluation
+# Evaluation
 
 
 
 <br>
 
-## Deployment
+# Deployment
 
 
 <br>
 
-## Conclusion
+# Conclusion
 

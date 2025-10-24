@@ -139,6 +139,8 @@ summary(Heart.df)
 ## Data preprocessing
 We will preprocess the data by handling missing values, encoding categorical variables, and scaling numerical features.
 
+**Convert binary variables to (0, 1)**
+
 According to the data dictionary, the following attributes should be binary variables: `sex`, `fbs`, `exang`, and `target`. But, some shows to have values besides 0’s and 1’s.
 Let’s convert binary variables to (0, 1)
 ```{r}
@@ -148,11 +150,13 @@ Heart.df$fbs <- ifelse(Heart.df$fbs > 0, 1, 0)
 Heart.df$exang <- ifelse(Heart.df$exang > 0, 1, 0)
 ```
 
+**Handle missing values**
+
 Handle missing values in `ca` and `thal` variables using mean/mode imputation.
 ```{r}
 Heart.df$ca[is.na(Heart.df$ca)] <- median(Heart.df$ca, na.rm = TRUE)
 Heart.df$ca[Heart.df$ca == "?"] <- median(Heart.df$ca, na.rm = TRUE)
-#Heart.df$thal[is.na(Heart.df$thal)] <- median(Heart.df$thal, na.rm = TRUE)
+Heart.df$thal[is.na(Heart.df$thal)] <- median(Heart.df$thal, na.rm = TRUE)
 Heart.df$ca[Heart.df$thal == "?"] <- median(Heart.df$thal, na.rm = TRUE)
 ```
 
@@ -161,13 +165,16 @@ Check for missing values if still exist
 sapply(Heart.df, function(x) sum(is.na(x)))
 ```
 
+**Handle duplicate entries**
+
 Check for duplicate entries and print them if they exist.
 ```{r}
 dupes <- Heart.df[duplicated(Heart.df) | duplicated(Heart.df, fromLast = TRUE), ]
 print(dupes)
 ```
 
-Convert categorical variables to factor.
+**Convert categorical variables to factor.**
+
 Define a list of categorical columns with their levels and labels
 ```{r}
 categorical_columns <- list(
@@ -194,6 +201,8 @@ for (col in names(categorical_columns)) {
 }
 ```
 
+**Handle outliers in numerical variables**
+
 Apply multiple filters to identify and handle outliers in numerical variables.
 ```{r}
 Heart.df <- Heart.df[Heart.df$age > 40 &
@@ -212,10 +221,6 @@ Similarly, cholesterol values are filtered using two constraints: `Heart.df$chol
 The condition `Heart.df\$thalach > 115` retains only those patients whose maximum heart rate achieved during exercise falls within a normal performance range. Extremely low thalach values often suggest incomplete stress tests or data entry errors, which could bias the interpretation of cardiovascular efficiency. Finally, `Heart.df$oldpeak < 2.4` removes extreme ST depression values. In clinical terms, oldpeak measures the degree of ST segment depression during exercise, and values beyond 2.4 are uncommon and may represent atypical cardiac events that do not align with general population patterns in the dataset.
 
 Overall, these filters collectively enhance the integrity of the data and the reliability of subsequent analysis. By trimming implausible extremes, the dataset becomes more homogeneous, improving the clarity of boxplots, histograms, and scatterplots generated during exploratory data analysis. Moreover, this targeted filtering supports more stable and interpretable model outcomes by preventing a few extreme observations from disproportionately influencing trends or coefficients. The result is a dataset that better represents realistic health profiles, ultimately strengthening the credibility of insights drawn from the heart disease risk modeling process.
-
-
-
-
 
 ## Helper functions
 

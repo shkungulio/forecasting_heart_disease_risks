@@ -15,7 +15,7 @@ output:
 geometry: margin=1in
 mainfont: "Montserrat"          # clean, legible body font
 sansfont: "Lato"               # for headings and infoboxes
-monofont: "Consolas"              # for code chunks
+monofont: "JetBrains Mono"              # for code chunks
 colorlinks: true
 linkcolor: blue
 urlcolor: steelblue
@@ -30,7 +30,6 @@ header-includes:
   - \titleformat{\subsection}{\large\bfseries\color{subbrand}}{\thesubsection}{0.75em}{}
   - \usepackage[most]{tcolorbox}
   - \tcbset{colback=white, colframe=brand, coltitle=white, fonttitle=\bfseries}
-  # Header/footer branding
   - \usepackage{fancyhdr}
   - \pagestyle{fancy}
   - \fancyhead[L]{\textcolor{brand}{Forecasting Heart Disease Risks}}

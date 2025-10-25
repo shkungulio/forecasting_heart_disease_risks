@@ -7,15 +7,15 @@ categories: [Data Science, Machine Learning, Healthcare]
 tags: [R, Machine Learning, Healthcare, Data Analysis]
 output:
   pdf_document:
-    latex_engine: xelatex          # enables system fonts
+    latex_engine: xelatex
     number_sections: true
     toc: true
-    toc_depth: 2
-    highlight: tango               # code syntax color theme
+    highlight: espresso
+#fontsize: 12pt
 geometry: margin=1in
-mainfont: "Montserrat"          # clean, legible body font
-sansfont: "Lato"               # for headings and infoboxes
-monofont: "JetBrains Mono"              # for code chunks
+mainfont: "Montserrat"        # clean, legible body font
+sansfont: "Lato"              # for headings and infoboxes
+#monofont: "Fira Code"        # for code chunks
 colorlinks: true
 linkcolor: blue
 urlcolor: steelblue
@@ -35,7 +35,7 @@ header-includes:
   - \fancyhead[L]{\textcolor{brand}{Forecasting Heart Disease Risks}}
   - \fancyhead[R]{\textcolor{subbrand}{Seif H. Kungulio}}
   - \fancyfoot[C]{\thepage}
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 
@@ -64,18 +64,22 @@ theme_set(theme_gray())
 
 \newpage
 
-
-
-
+This page was deliberately left blank
 
 \newpage
 
 # **Business Understanding**
 ## Introduction
+Cardiovascular diseases remain one of the leading causes of death worldwide, imposing significant clinical and financial burdens on individuals and organizations alike. Early identification of people at risk of developing heart disease is therefore a priority not only in healthcare but also in sectors such as insurance and public health policy. For insurance companies in particular, understanding the likelihood that a policyholder will develop heart disease is crucial for assessing health risks, pricing premiums, and designing preventive wellness programs that promote healthier lifestyles among clients.
+
+This project applies predictive analytics and machine learning techniques to the Heart Disease dataset from the UCI Machine Learning Repository. The dataset contains a diverse range of patient attributes—including demographic, physiological, and clinical indicators—that are known to influence cardiovascular health. By systematically analyzing these variables, the project aims to uncover patterns and risk factors associated with the onset of heart disease.
+
+The broader business objective is to build a data-driven decision support system that can forecast an individual’s probability of developing heart disease. Such a model enables insurers to perform risk stratification, design personalized premium plans, and support preventive health initiatives that lower long-term costs. Through this analytical framework, the project demonstrates how data science can transform raw medical data into actionable business intelligence, fostering both economic efficiency and social impact.
 
 ## Problem statement
+\begin{tcolorbox}[title=Problem statement]
 To develop models for an insurance company using the Heart Disease dataset from the UCI Machine Learning Repository. The goal is to predict the likelihood of a person developing heart disease, which would help the insurance company estimate health risks and adjust premiums accordingly.
-
+\end{tcolorbox}
 
 \newpage
 
@@ -143,9 +147,8 @@ Heart.df <- read.csv(text = getURL(url), header = FALSE, na.strings = "?")
 
 Rename the columns into a meaningful column names
 ```{r}
-colnames(Heart.df) <- c("age", "sex", "cp", "trestbps", "chol", "fbs",
-                        "restecg", "thalach", "exang", "oldpeak", 
-                        "slope", "ca", "thal", "target")
+colnames(Heart.df) <- c("age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", 
+                        "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target")
 ```
 
 Display dimensions of the dataset
@@ -244,15 +247,17 @@ Heart.df <- Heart.df[Heart.df$age > 40 &
                        Heart.df$thalach > 115 &
                        Heart.df$oldpeak < 2.4, ]
 ```
+
 This section of the analysis performs a crucial data-cleaning step aimed at refining the quality of the dataset before modeling and visualization. The filtering operation applies a set of logical conditions to remove extreme or biologically implausible values from key continuous health indicators such as age, blood pressure, cholesterol, heart rate, and ST depression. By doing so, it ensures that the dataset reflects realistic patient characteristics and minimizes the influence of outliers that could distort statistical interpretation or predictive accuracy.
 
-The first filter, `Heart.df\$age > 40`, narrows the focus to patients over 40 years of age. This decision is grounded in clinical reasoning—heart disease is relatively uncommon in younger individuals, and including them could introduce noise rather than insight into cardiovascular risk patterns. The next condition, `Heart.df$trestbps < 170`, restricts resting blood pressure to physiologically typical values, removing excessively high readings that may result from measurement error or rare hypertensive crises.
+The first filter, `Heart.df$age > 40`, narrows the focus to patients over 40 years of age. This decision is grounded in clinical reasoning—heart disease is relatively uncommon in younger individuals, and including them could introduce noise rather than insight into cardiovascular risk patterns. The next condition, `Heart.df$trestbps < 170`, restricts resting blood pressure to physiologically typical values, removing excessively high readings that may result from measurement error or rare hypertensive crises.
 
-Similarly, cholesterol values are filtered using two constraints: `Heart.df$chol < 340` and `Heart.df\$chol > 150`. This dual boundary ensures that cholesterol readings fall within a realistic clinical range, excluding both unusually low and excessively high values. Extremely high cholesterol levels (above 340 mg/dl) could be outliers due to lab errors or rare genetic conditions, while very low levels (below 150 mg/dl) are equally atypical for this patient population.
+Similarly, cholesterol values are filtered using two constraints: `Heart.df$chol < 340` and `Heart.df$chol > 150`. This dual boundary ensures that cholesterol readings fall within a realistic clinical range, excluding both unusually low and excessively high values. Extremely high cholesterol levels (above 340 mg/dl) could be outliers due to lab errors or rare genetic conditions, while very low levels (below 150 mg/dl) are equally atypical for this patient population.
 
-The condition `Heart.df\$thalach > 115` retains only those patients whose maximum heart rate achieved during exercise falls within a normal performance range. Extremely low thalach values often suggest incomplete stress tests or data entry errors, which could bias the interpretation of cardiovascular efficiency. Finally, `Heart.df$oldpeak < 2.4` removes extreme ST depression values. In clinical terms, oldpeak measures the degree of ST segment depression during exercise, and values beyond 2.4 are uncommon and may represent atypical cardiac events that do not align with general population patterns in the dataset.
+The condition `Heart.df$thalach > 115` retains only those patients whose maximum heart rate achieved during exercise falls within a normal performance range. Extremely low thalach values often suggest incomplete stress tests or data entry errors, which could bias the interpretation of cardiovascular efficiency. Finally, `Heart.df$oldpeak < 2.4` removes extreme ST depression values. In clinical terms, oldpeak measures the degree of ST segment depression during exercise, and values beyond 2.4 are uncommon and may represent atypical cardiac events that do not align with general population patterns in the dataset.
 
 Overall, these filters collectively enhance the integrity of the data and the reliability of subsequent analysis. By trimming implausible extremes, the dataset becomes more homogeneous, improving the clarity of boxplots, histograms, and scatterplots generated during exploratory data analysis. Moreover, this targeted filtering supports more stable and interpretable model outcomes by preventing a few extreme observations from disproportionately influencing trends or coefficients. The result is a dataset that better represents realistic health profiles, ultimately strengthening the credibility of insights drawn from the heart disease risk modeling process.
+
 
 ## Helper functions
 

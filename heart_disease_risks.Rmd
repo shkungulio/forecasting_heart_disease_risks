@@ -1,14 +1,43 @@
 ---
 title: "FORECASTING HEART DISEASE RISKS"
 author: "Seif Kungulio"
-date: "`r Sys.Date()`"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
 description: "An analysis to predict heart disease risks using machine learning techniques."
 categories: [Data Science, Machine Learning, Healthcare]
 tags: [R, Machine Learning, Healthcare, Data Analysis]
-output: 
+output:
   pdf_document:
+    latex_engine: xelatex          # enables system fonts
+    number_sections: true
     toc: true
-    toc_depth: 3
+    toc_depth: 2
+    highlight: tango               # code syntax color theme
+geometry: margin=1in
+mainfont: "Montserrat"          # clean, legible body font
+sansfont: "Lato"               # for headings and infoboxes
+monofont: "Consolas"              # for code chunks
+colorlinks: true
+linkcolor: blue
+urlcolor: steelblue
+citecolor: navy
+header-includes:
+  # Font and color setup
+  - \usepackage{xcolor}
+  - \definecolor{brand}{HTML}{003366}        % deep corporate blue
+  - \definecolor{subbrand}{HTML}{555555}     % neutral gray
+  - \usepackage{titlesec}
+  - \titleformat{\section}{\Large\bfseries\color{brand}}{\thesection}{1em}{}
+  - \titleformat{\subsection}{\large\bfseries\color{subbrand}}{\thesubsection}{0.75em}{}
+  - \usepackage[most]{tcolorbox}
+  - \tcbset{colback=white, colframe=brand, coltitle=white, fonttitle=\bfseries}
+  # Header/footer branding
+  - \usepackage{fancyhdr}
+  - \pagestyle{fancy}
+  - \fancyhead[L]{\textcolor{brand}{Forecasting Heart Disease Risks}}
+  - \fancyhead[R]{\textcolor{subbrand}{Seif H. Kungulio}}
+  - \fancyfoot[C]{\thepage}
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -20,7 +49,7 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 
 #Install the following libraries if required
 # List of required packages
-required_pkgs <- c("tidyverse", "RCurl", "caret", "randomForest",
+required_pkgs <- c("tidyverse", "RCurl", "caret", "randomForest", "formatR",
                    "e1071", "rpart", "corrplot", "GGally", "pROC")
 
 # Install and load each package
@@ -34,20 +63,24 @@ for (pkg in required_pkgs) {
 theme_set(theme_gray())
 ```
 
-# INTRODUCTION
+\newpage
 
 
 
-<br>
 
-# BUSINESS UNDERSTANDING
+
+\newpage
+
+# **Business Understanding**
+## Introduction
+
 ## Problem statement
 To develop models for an insurance company using the Heart Disease dataset from the UCI Machine Learning Repository. The goal is to predict the likelihood of a person developing heart disease, which would help the insurance company estimate health risks and adjust premiums accordingly.
 
 
-<br>
+\newpage
 
-# DATA UNDERSTANDING
+# **Data Understanding**
 The dataset contains various features related to patients' health and demographic information. We will explore the dataset to understand its structure and relationships between variables.
 
 ## Data description
@@ -96,12 +129,12 @@ The dataset contains 14 key attributes that are either numerical or categorical.
 * Class Imbalance: Preliminary checks suggest the dataset is relatively balanced between presence and absence of disease, but this will be verified.
 * Outliers: Numerical fields such as chol (cholesterol) and trestbps (blood pressure) may have outliers that need to be detected and considered in analysis.
 
-<br>
+\newpage
 
-# DATA PREPARATION
+# **Data Preparation**
 ## Data loading
 Load the dataset from the UCI website to memory
-```{r}
+```{r tidy=TRUE, tidy.opts=list(width.cutoff=80)}
 # Load the dataset
 url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
 
@@ -376,28 +409,40 @@ corrplot(correlation_matrix, method = "circle",
          type = "lower", tl.col = "black")
 ```
 
+### Class imbalance
+```{r}
+Heart.df %>% count(target) %>% mutate(pct = n/sum(n))
+```
 
 
 
+\newpage
 
-<br>
-
-# MODELING
-
-
-
-<br>
-
-# EVALUATION
+# **Modeling**
 
 
 
-<br>
+\newpage
 
-# DEPLOYMENT
+# **Evaluation**
 
 
-<br>
 
-# CONCLUSION
+\newpage
 
+# **Deployment**
+
+
+\newpage
+
+# **Conclusion**
+
+
+
+\newpage
+
+# **Session Information**
+
+```{r}
+sessionInfo()
+```

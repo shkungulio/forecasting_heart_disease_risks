@@ -1,5 +1,5 @@
 ---
-title: "FORECASTING HEART DISEASE RISKS"
+title: "Forecasting Heart Disease Risks"
 author: "Seif Kungulio"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 description: "An analysis to predict heart disease risks using machine learning techniques."
@@ -7,24 +7,17 @@ categories: [Data Science, Machine Learning, Healthcare]
 tags: [R, Machine Learning, Healthcare, Data Analysis]
 output:
   pdf_document:
-    latex_engine: xelatex
-    number_sections: true
     toc: true
+    number_sections: true
     highlight: espresso
-#fontsize: 12pt
-geometry: margin=1in
-mainfont: "Montserrat"        # clean, legible body font
-sansfont: "Lato"              # for headings and infoboxes
-#monofont: "Fira Code"        # for code chunks
-colorlinks: true
-linkcolor: blue
-urlcolor: steelblue
-citecolor: navy
+    include:
+      in_header: resources/header.tex
+    latex_engine: xelatex
 header-includes:
   # Font and color setup
   - \usepackage{xcolor}
-  - \definecolor{brand}{HTML}{003366}        % deep corporate blue
-  - \definecolor{subbrand}{HTML}{555555}     % neutral gray
+  - \definecolor{brand}{HTML}{000000}
+  - \definecolor{subbrand}{HTML}{212121}
   - \usepackage{titlesec}
   - \titleformat{\section}{\Large\bfseries\color{brand}}{\thesection}{1em}{}
   - \titleformat{\subsection}{\large\bfseries\color{subbrand}}{\thesubsection}{0.75em}{}
@@ -38,7 +31,6 @@ header-includes:
 editor_options:
   chunk_output_type: console
 ---
-
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=6)
@@ -61,7 +53,8 @@ for (pkg in required_pkgs) {
   library(pkg, character.only = TRUE)
 }
 
-theme_set(theme_gray())
+theme_set(theme_minimal(base_size = 12))
+options(dplyr.summarise.inform = FALSE)
 ```
 
 \newpage
@@ -452,6 +445,9 @@ base_recipe <-
   step_normalize(all_numeric_predictors())
 ```
 
+```{r include=FALSE}
+knitr::knit_exit()
+```
 
 \newpage
 

@@ -53,6 +53,9 @@ for (pkg in required_pkgs) {
   library(pkg, character.only = TRUE)
 }
 
+# Load the dataset
+url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+
 theme_set(theme_minimal(base_size = 12))
 options(dplyr.summarise.inform = FALSE)
 ```
@@ -132,10 +135,7 @@ The dataset contains 14 key attributes that are either numerical or categorical.
 # **Data Preparation**
 ## Data loading
 Load the dataset from the UCI website to memory
-```{r tidy=TRUE, tidy.opts=list(width.cutoff=80)}
-# Load the dataset
-url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
-
+```{r}
 # Read the dataset into a dataframe
 Heart.df <- read.csv(text = getURL(url), header = FALSE, na.strings = "?")
 ```

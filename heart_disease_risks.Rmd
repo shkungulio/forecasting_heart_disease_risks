@@ -41,8 +41,8 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 #Install the following libraries if required
 # List of required packages
 required_pkgs <- c("tidyverse", "RCurl", "caret", "randomForest", "formatR",
-                   "tidymodels", "vip", "themis", "janitor", "GGally", 
-                   "yardstick", "finetune", "workflowsets", "probably", 
+                   "tidymodels", "vip", "themis", "janitor", "GGally", "xgboost", 
+                   "yardstick", "finetune", "workflowsets", "probably",
                    "discrim", "e1071", "rpart", "corrplot", "GGally", "pROC")
 
 # Install and load each package
@@ -302,6 +302,11 @@ HeartDiseaseScatter <- function(point1, point2){
 ```
 
 ## Exploratory data analysis
+### Class imbalance
+```{r}
+Heart.df %>% count(target) %>% mutate(pct = n/sum(n))
+```
+
 ### Boxplots for numerical variables
 I used boxplots to visually examine the distribution of key continuous health indicators — such as age, resting blood pressure (trestbps), cholesterol (chol), maximum heart rate (thalach), and ST depression (oldpeak) — across the binary target variable (Heart Disease: Yes / No).
 Boxplots were chosen because they efficiently highlight differences in central tendency (median), variability (IQR), and the presence of potential outliers between patients with and without heart disease.
@@ -408,41 +413,28 @@ corrplot(correlation_matrix, method = "circle",
          type = "lower", tl.col = "black")
 ```
 
-### Class imbalance
+
+
+### Spliting the dataset
+Split the dataset into training set and testing set. I will use 70% of the data for training and 30% for testing.
+
 ```{r}
-Heart.df %>% count(target) %>% mutate(pct = n/sum(n))
+# Set random seed for reproducibility
+set.seed(123)
+
+# Split dataset into training (70%) and testing (30%)
+indx <- createDataPartition(Heart.df$target, p =0.7, list = FALSE)
+train_data <- Heart.df[indx, ]
+test_data <- Heart.df[-indx, ]
 ```
 
-### Split & Resampling
-```{r}
-set.seed(123)
-split <- initial_split(Heart.df, prop = 0.8, strata = target)
-train <- training(split);  test <- testing(split)
+### Scale numeric variables
+For models like SVM and KNN, we need to scale the numeric features. Scaling numerical features (excluding the target and categorical variables)
 
-set.seed(123)
-folds <- vfold_cv(train, v = 10, strata = target)
-```
-
-### Feature engineering
 ```{r}
-base_recipe <-
-  recipe(target ~ ., data = train) %>%
-  # Optional domain transforms
-  step_mutate(
-    age_band = cut(age, breaks = c(0,40,50,60,70,100),
-                   labels = c("<40","40-49","50-59","60-69","70+"))
-  ) %>%
-  step_rm(age_band) %>%  # keep linear age first; reintroduce if helpful
-  # Handle rare levels (robust to small data)
-  step_other(all_nominal_predictors(), threshold = 0.02) %>%
-  # Impute
-  step_impute_median(all_numeric_predictors()) %>%
-  step_impute_mode(all_nominal_predictors()) %>%
-  # One-hot encode
-  step_dummy(all_nominal_predictors()) %>%
-  # Standardize numeric
-  step_zv(all_predictors()) %>%
-  step_normalize(all_numeric_predictors())
+numeric_columns <- c("age", "trestbps", "chol", "thalach", "oldpeak")
+train_data[numeric_columns] <- scale(train_data[numeric_columns])
+test_data[numeric_columns] <- scale(test_data[numeric_columns])
 ```
 
 ```{r include=FALSE}
@@ -454,84 +446,92 @@ knitr::knit_exit()
 # **Modeling**
 
 ## Logistic Regression
+Logistic regression is suitable for predicting a binary outcome (presence or absence of heart disease)
+
+Train logistic regression
 ```{r}
-logit_spec <-
-  logistic_reg(penalty = tune(), mixture = 1) %>%  # LASSO
-  set_engine("glmnet")
+log_model <- glm(target ~., data = train_data, family = binomial)
+
+summary(log_model)
+```
+
+Predict the logistic regression model using the testing data.
+
+```{r}
+log_pred <- predict(log_model, test_data, type = "response")
+log_pred_class <- ifelse(log_pred > 0.5, "Yes", "No")
+
+summary(log_pred)
 ```
 
 ## Random Forest
+Train the Random Forest Model with Hyperparameter tuning
+
 ```{r}
-rf_spec <-
-  rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>%
-  set_engine("ranger", importance = "permutation", num.threads = parallel::detectCores()) %>%
-  set_mode("classification")
+rf_model <- train(target ~ ., data = train_data, method = "rf", 
+                  trControl = trainControl(method = "cv", number = 10),
+                  tuneGrid = expand.grid(mtry = c(2, 3, 4, 5)))
+
+summary(rf_model)
+```
+
+Predict on random forest model using the testing data.
+
+```{r}
+rf_pred <- predict(rf_model, test_data)
+
+summary(rf_pred)
 ```
 
 
-## XGBoost
+## Support Vector Machine (SVM)
+Train the Support Vector Machine Model
 ```{r}
-xgb_spec <-
-  boost_tree(
-    trees = 1000, tree_depth = tune(), learn_rate = tune(),
-    mtry  = tune(), loss_reduction = tune(), min_n = tune()
-  ) %>%
-  set_engine("xgboost") %>%
-  set_mode("classification")
+svm_model <- svm(target ~ ., data = train_data, kernel = "radial")
+
+summary(svm_model)
 ```
 
-## Workflows
+Predict the SVM model using the testing data
 ```{r}
-logit_wf <- workflow() %>% add_model(logit_spec) %>% add_recipe(base_recipe)
-rf_wf    <- workflow() %>% add_model(rf_spec)    %>% add_recipe(base_recipe)
-xgb_wf   <- workflow() %>% add_model(xgb_spec)   %>% add_recipe(base_recipe)
+svm_pred <- predict(svm_model, test_data)
+
+summary(svm_pred)
 ```
 
-### Workflow set for parallel tuning
-```{r}
-wf_set <- workflow_set(
-  preproc = list(baseline = base_recipe),
-  models  = list(logit = logit_spec, rf = rf_spec, xgb = xgb_spec),
-  cross   = FALSE
-)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r include=FALSE}
+knitr::knit_exit()
 ```
 
-### Tuning grids
-```{r}
-logit_grid <- grid_regular(penalty(range = c(-5, 0)), levels = 20) %>% # 1e-5..1
-  mutate(penalty = 10^penalty)
-rf_grid    <- grid_latin_hypercube(mtry(range = c(2L, 10L)), min_n(), size = 20)
-xgb_grid   <- grid_latin_hypercube(
-  tree_depth(), learn_rate(range = c(-3, -0.5)), mtry(range = c(2L,10L)),
-  loss_reduction(), min_n(), size = 30
-) %>% mutate(learn_rate = 10^learn_rate)
 
-ctrl <- control_grid(save_pred = TRUE, parallel_over = "resamples")
+
+
+
+## Model selection
+```{r}
+
 ```
 
+### Pick the best ROC-AUC
 ```{r}
-set.seed(2025)
-logit_res <- tune_grid(logit_wf, resamples = folds, grid = logit_grid,
-                       metrics = metric_set(roc_auc, pr_auc, brier_class), 
-                       control = ctrl)
+
 ```
-
-```{r}
-set.seed(2025)
-rf_res    <- tune_grid(rf_wf,    resamples = folds, grid = rf_grid,
-                       metrics = metric_set(roc_auc, pr_auc, brier_class), 
-                       control = ctrl)
-```
-
-<!-- ```{r} -->
-<!-- set.seed(2025) -->
-<!-- xgb_res   <- tune_grid(xgb_wf,   resamples = folds, grid = xgb_grid, -->
-<!--                        metrics = metric_set(roc_auc, pr_auc, brier_class),  -->
-<!--                        control = ctrl) -->
-<!-- ``` -->
-
-### Model selection
-
 
 
 \newpage

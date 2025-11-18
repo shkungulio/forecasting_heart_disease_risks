@@ -9,7 +9,6 @@ output:
   pdf_document:
     latex_engine: xelatex
     toc: false
-    #number_sections: true
     highlight: espresso
     include:
       in_header: resources/header.tex
@@ -266,6 +265,7 @@ HeartDiseaseBoxplot <- function(var1, var2) {
          x = var1, y = var2, fill = "Heart Disease")
 }
 ```
+The HeartDiseaseBoxplot() function is designed to visualize how a numerical health-related variable behaves across the different levels of a categorical grouping variable, typically the heart disease outcome. By placing the grouping variable on the x-axis and a continuous risk factor on the y-axis, the resulting boxplot highlights differences in median values, variability, and outliers for each group. This plot offers a fast and intuitive way to assess how a particular clinical measurement—such as age, blood pressure, cholesterol, maximum heart rate, or ST depression—differs between patients with and without diagnosed heart disease. It plays a critical role in early exploratory analysis, helping uncover potential risk factor patterns that may influence model development later.
 
 **Function to create Bar plots**
 ```{r}
@@ -276,6 +276,7 @@ HeartDiseaseBar <- function(var) {
          x = var, fill = "Heart Disease")
 }
 ```
+The HeartDiseaseBar() function produces a categorical bar chart that compares the counts of heart disease outcomes within each category of a selected variable. This is especially useful for demographic or clinical classification variables such as sex, chest pain type, fasting blood sugar, resting ECG results, exercise-induced angina, slope, or thalassemia status. By breaking down the target variable across these groups, the bar chart reveals which categories show higher or lower observed heart disease prevalence. This insight is valuable in understanding population segments that may require additional attention, and it helps identify categorical predictors that could contribute significantly to a classification model.
 
 **Function to create Histograms**
 ```{r}
@@ -286,6 +287,7 @@ HeartDiseaseHist <- function(var1) {
          x = var1, fill = "Heart Disease")
 }
 ```
+The HeartDiseaseHist() function creates a histogram for a continuous health variable and overlays the distribution according to heart disease status. This visualization makes it easy to examine the overall shape, skewness, and concentration of values for a risk factor while simultaneously comparing the distribution between patients with and without heart disease. Whether analyzing age, resting blood pressure, cholesterol levels, maximum heart rate achieved, or ST depression, the histogram reveals whether certain ranges of values appear more frequently in either outcome group. This function enhances exploratory data analysis by showing how numerical features behave across the target variable and whether separation patterns exist that the model may later exploit.
 
 **Function to create Scatter plots**
 ```{r}
@@ -299,6 +301,7 @@ HeartDiseaseScatter <- function(point1, point2){
        x = point1, y = point2, color = "Heart Disease")
 }
 ```
+The HeartDiseaseScatter() function generates a scatterplot showing the relationship between two numeric variables, with each point colored by heart disease status. By plotting one clinical indicator on the x-axis and another on the y-axis, this visualization helps reveal correlations, clusters, and potential separation between outcome groups. The function also overlays a linear trend line for each group, giving a quick visual summary of the direction and strength of the relationship. This makes the scatterplot especially useful for exploring associations such as age versus cholesterol, heart rate versus ST depression, or blood pressure versus heart rate. Ultimately, this function supports deeper understanding of how pairs of predictors interact and how those interactions relate to the presence of heart disease.
 
 ## Exploratory data analysis
 ### Class imbalance
@@ -314,37 +317,39 @@ Boxplots were chosen because they efficiently highlight differences in central t
 ```{r}
 HeartDiseaseBoxplot("target", "age")
 ```
+The age boxplot shows that both groups are relatively similar in age distribution, but individuals with heart disease tend to be slightly older on average. The median age for the “Yes” group appears marginally higher, suggesting that age remains a contributing factor even after filtering out younger patients below 40. However, the overlap in interquartile ranges indicates that age alone does not offer strong separation between the two groups.
 
 
 **Boxplot of Resting Blood Pressure (trestbps) by Heart Disease**
 ```{r}
 HeartDiseaseBoxplot("target", "trestbps")
 ```
-
+The trestbps boxplot indicates that patients with heart disease have resting blood pressure levels that are generally comparable to those without heart disease. The medians of both groups are close, and their spreads overlap significantly. This suggests that resting blood pressure—after extreme values were filtered—does not strongly differentiate between the two groups.
 
 **Boxplot of Cholesterol (chol) by Heart Disease**
 ```{r}
 HeartDiseaseBoxplot("target", "chol")
 ```
-
+The cholesterol boxplot shows slightly higher cholesterol values among the heart-disease group, with a marginally higher median level. Although there is considerable overlap in distributions, the “Yes” group tends to include more values toward the upper range. This pattern is consistent with cholesterol being a known cardiovascular risk factor, but not a deterministic one within this dataset.
 
 **Boxplot of Maximum Heart Rate Achieved (thalach) by Heart Disease**
 ```{r}
 HeartDiseaseBoxplot("target", "thalach")
 ```
-
+The thalach boxplot reveals a clearer distinction than the previous variables: patients with heart disease tend to have lower maximum heart rates achieved during exercise. The median thalach for the “Yes” group is visibly lower, and their distribution is shifted downward relative to the “No” group. This aligns with clinical expectations—reduced cardiac performance often manifests as lower achievable heart rates during stress tests.
 
 **Boxplot of ST Depression (oldpeak) by Heart Disease**
 ```{r}
 HeartDiseaseBoxplot("target", "oldpeak")
 ```
-
+This boxplot provides one of the strongest visual separations. Patients with heart disease generally exhibit higher oldpeak values, indicating greater ST depression during exercise. The median for the “Yes” group is noticeably higher, and the upper range of ST depression appears more pronounced. Because ST depression is directly linked to abnormal myocardial response, this variable stands out as a meaningful predictor.
 
 **Overall boxplots observations:**
 
+Across all numerical variables, thalach and oldpeak show the most distinct separation between heart-disease and non-heart-disease groups.
+Age and cholesterol exhibit moderate differentiation, while resting blood pressure shows minimal separation.
 
-
-
+These insights support the modeling phase by identifying which numeric predictors carry the strongest signal for classification.
 
 
 

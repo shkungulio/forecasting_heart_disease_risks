@@ -136,9 +136,7 @@ The dataset contains 14 key attributes that are either numerical or categorical.
 ## Data loading
 Load the dataset from the UCI website to memory
 ```{r}
-
 Heart.df <- read.csv(text = getURL(url), header = FALSE, na.strings = "?")
-
 ```
 
 Rename the columns into a meaningful column names

@@ -5,14 +5,14 @@ date: "`r format(Sys.Date(), '%B %d, %Y')`"
 description: "An analysis to predict heart disease risks using machine learning techniques."
 categories: [Data Science, Machine Learning, Healthcare]
 tags: [R, Machine Learning, Healthcare, Data Analysis]
-output:
+output: 
   pdf_document:
-    toc: true
-    number_sections: true
+    latex_engine: xelatex
+    toc: false
+    #number_sections: true
     highlight: espresso
     include:
       in_header: resources/header.tex
-    latex_engine: xelatex
 header-includes:
   # Font and color setup
   - \usepackage{xcolor}
@@ -62,7 +62,7 @@ options(dplyr.summarise.inform = FALSE)
 
 \newpage
 
-This page was deliberately left blank
+\tableofcontents
 
 \newpage
 

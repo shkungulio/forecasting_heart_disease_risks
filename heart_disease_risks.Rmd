@@ -206,17 +206,23 @@ print(dupes)
 Define a list of categorical columns with their levels and labels
 ```{r}
 categorical_columns <- list(
-  sex = list(levels = c(0, 1), labels = c("Female", "Male")),
-  cp = list(levels = c(1, 2, 3, 4), labels = c("Typical Angina", 
-                                               "Atypical Angina", "Non-Angina",
-                                               "Asymptomatic")),
-  fbs = list(levels = c(0, 1), labels = c("False", "True")),
-  restecg = list(levels = c(0, 1, 2), labels = c("Normal", "Wave-abnormality", "Probable")),
-  exang = list(levels = c(0, 1), labels = c("No", "Yes")),
-  slope = list(levels = c(1, 2, 3), labels = c("Upsloping", "Flat", 
-                                               "Downsloping")),
-  thal = list(levels = c(3, 6, 7), labels = c("Normal", "Fixed Defect", "Reversible")),
-  target = list(levels = c(1, 0), labels = c("Yes", "No"))
+  sex = list(levels = c(0, 1), 
+             labels = c("Female", "Male")),
+  cp = list(levels = c(1, 2, 3, 4), 
+            labels = c("Typical Angina", "Atypical Angina", "Non-Angina", 
+                       "Asymptomatic")),
+  fbs = list(levels = c(0, 1), 
+             labels = c("False", "True")),
+  restecg = list(levels = c(0, 1, 2), 
+                 labels = c("Normal", "Wave-abnormality", "Probable")),
+  exang = list(levels = c(0, 1), 
+               labels = c("No", "Yes")),
+  slope = list(levels = c(1, 2, 3), 
+               labels = c("Upsloping", "Flat", "Downsloping")),
+  thal = list(levels = c(3, 6, 7), 
+              labels = c("Normal", "Fixed Defect", "Reversible")),
+  target = list(levels = c(1, 0), 
+                labels = c("Yes", "No"))
 )
 ```
 
@@ -475,8 +481,7 @@ HeartDiseaseScatter("thalach", "oldpeak")
 ### Pairwise correlation plots
 Pairwise correlation plot for numerical variables
 ```{r}
-ggpairs(Heart.df[, c("age", "trestbps", "chol", 
-                     "thalach", "oldpeak", "target")], 
+ggpairs(Heart.df[, c("age", "trestbps", "chol", "thalach", "oldpeak", "target")], 
         aes(color = target, fill = target))
 ```
 

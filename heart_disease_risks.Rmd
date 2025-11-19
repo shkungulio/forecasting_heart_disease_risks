@@ -362,37 +362,115 @@ ggplot(Heart.df, aes(x=target, fill=target))+
   ggtitle("Distribution of Heart Disease") +
   labs(x = "Heart Disease", fill = "Heart Disease")
 ```
+The barplot of the target variable shows that the dataset contains more patients without heart disease than those diagnosed with the condition. While the groups are not perfectly balanced, the distribution is still sufficient to support reliable classification modeling. The presence of a substantial number of patients in both groups ensures that patterns distinguishing diseased from non-diseased individuals can be learned without the need for aggressive resampling techniques.
 
-Visualize distribution of categorical variables by heart disease presence.
+**Visualize distribution of `sex`**
 ```{r}
 HeartDiseaseBar("sex")
+```
+The distribution of heart disease across sex reveals a noticeable difference between males and females. Although both groups include patients with and without heart disease, the proportion of heart disease cases is higher among males. This observation aligns with established clinical evidence showing that men are at a higher risk for developing cardiovascular conditions. The barplot therefore suggests that sex may hold moderate predictive value in distinguishing risk levels.
+
+**Visualize distribution of `cp`**
+```{r}
 HeartDiseaseBar("cp")
+```
+Chest pain type stands out as one of the most informative categorical variables in the dataset. The barplot shows that patients with asymptomatic chest pain (classified as type 4) have a markedly higher prevalence of heart disease compared to the other chest pain categories. In contrast, typical and atypical angina types show fewer heart disease cases, and non-anginal discomfort falls somewhere in between. This strong separation highlights chest pain type as a critical clinical marker and a powerful predictor for modeling.
+
+**Visualize distribution of `fbs`**
+```{r}
 HeartDiseaseBar("fbs")
+```
+The comparison between patients with elevated fasting blood sugar and those within normal ranges reveals minimal separation in heart disease outcomes. Both categories show similar proportions of “Yes” and “No” cases, suggesting that fasting blood sugar greater than 120 mg/dl does not substantially influence heart disease prevalence in this particular dataset. As a result, fbs appears to contribute only weak predictive value to the classification task.
+
+**Visualize distribution of `restecg`**
+```{r}
 HeartDiseaseBar("restecg")
+```
+The barplot for resting ECG categories shows relatively similar distributions of heart disease across normal, wave-abnormality, and probable left ventricular hypertrophy groups. Although there are minor variations, these differences are not pronounced enough to indicate strong discriminative power. This suggests that resting ECG outcomes may provide some contextual clinical information but do not significantly differentiate between patients with and without heart disease in this dataset.
+
+**Visualize distribution of `exang`**
+```{r}
 HeartDiseaseBar("exang")
+```
+Exercise-induced angina demonstrates a clear relationship with heart disease. The barplot shows that patients who experience angina during physical exertion are more likely to be diagnosed with heart disease compared to those who do not exhibit this symptom. This pattern is clinically meaningful, as exercise-induced chest pain often reflects underlying myocardial ischemia. Consequently, exang emerges as a strong and reliable predictor in identifying high-risk individuals.
+
+**Visualize distribution of `slope`**
+```{r}
 HeartDiseaseBar("slope")
+```
+The slope variable also shows substantial variation in heart disease prevalence across its categories. Patients with a flat slope (slope = 2) exhibit the highest concentration of heart disease cases, whereas the upsloping and downsloping categories show a predominance of non-diseased individuals. This distinct separation suggests that the ST segment response during exercise is a valuable clinical indicator and an important feature for predictive modeling.
+
+**Visualize distribution of `thal`**
+```{r}
 HeartDiseaseBar("thal")
 ```
+The thal variable is among the strongest categorical predictors of heart disease in the dataset. The barplot highlights that individuals with a reversible defect (thal = 7) have the highest count of heart disease cases, followed by those with fixed defects. Meanwhile, patients with normal thalassemia patterns show mostly non-diseased outcomes. This sharp contrast underscores the clinical relevance of thalassemia patterns and reinforces this variable’s importance in risk prediction models.
 
 ### Histograms for Numerical Variables
+
+**Histogram of `age`**
 ```{r}
 HeartDiseaseHist("age")
+```
+
+**Histogram of `trestbps`**
+```{r}
 HeartDiseaseHist("trestbps")
+```
+
+**Histogram of `chol`**
+```{r}
 HeartDiseaseHist("chol")
+```
+
+**Histogram of `thalach`**
+```{r}
 HeartDiseaseHist("thalach")
+```
+
+**Histogram of `oldpeak`**
+```{r}
 HeartDiseaseHist("oldpeak")
 ```
 
+
 ### Scatterplots for numerical variables
+
+**Scatterplot of `age` vs `oldpeak`**
 ```{r}
 HeartDiseaseScatter("age", "oldpeak")
+```
+
+**Scatterplot of `age` vs `chol`**
+```{r}
 HeartDiseaseScatter("age", "chol")
+```
+
+**Scatterplot of `age` vs `tresbps`**
+```{r}
 HeartDiseaseScatter("age", "trestbps")
+```
+
+**Scatterplot of `age` vs `thalach`**
+```{r}
 HeartDiseaseScatter("age", "thalach")
+```
+
+**Scatterplot of `chol` vs `thalach`**
+```{r}
 HeartDiseaseScatter("chol", "thalach")
+```
+
+**Scatterplot of `trestbps` vs `chol`**
+```{r}
 HeartDiseaseScatter("trestbps", "chol")
+```
+
+**Scatterplot of `thalach` vs `oldpeak`**
+```{r}
 HeartDiseaseScatter("thalach", "oldpeak")
 ```
+
 
 ### Pairwise correlation plots
 Pairwise correlation plot for numerical variables

@@ -454,37 +454,44 @@ The distribution of oldpeak is heavily right-skewed, with the largest concentrat
 ```{r}
 HeartDiseaseScatter("age", "oldpeak")
 ```
+This scatterplot shows a mild upward trend: as age increases, oldpeak (ST depression during exercise) also tends to increase. Patients with heart disease (red) appear more concentrated in the higher oldpeak range across most age groups. Although both groups are distributed throughout the plot, the general pattern suggests that older individuals experience more ST depression—an indicator commonly associated with ischemic changes.
 
 **Scatterplot of `age` vs `chol`**
 ```{r}
 HeartDiseaseScatter("age", "chol")
 ```
+Cholesterol levels appear widely scattered across ages 40–70 with no strong visual correlation. The regression line shows only a slight upward slope, implying a very weak relationship between age and cholesterol. Both “Yes” and “No” groups overlap heavily, indicating that cholesterol does not systematically rise with age in this filtered dataset. Heart-disease points do appear slightly more frequent at the higher cholesterol values, but the separation remains minimal.
 
 **Scatterplot of `age` vs `tresbps`**
 ```{r}
 HeartDiseaseScatter("age", "trestbps")
 ```
+The scatterplot shows a mild positive trend: older patients tend to have slightly higher resting blood pressure. However, similar to age–cholesterol, both groups overlap almost completely. There is no clear visual separation between heart disease and non-heart-disease patients. This supports that trestbps, after outlier removal, offers limited discriminatory power.
 
 **Scatterplot of `age` vs `thalach`**
 ```{r}
 HeartDiseaseScatter("age", "thalach")
 ```
+This relationship shows the clearest downward trend: as age increases, maximum heart rate achieved decreases. The visual slope is strong and clinically expected. Importantly, heart-disease patients (red) stay more concentrated in the lower-thalach bands, while non-disease patients (blue) extend more frequently into higher heart-rate values. This scatterplot visually reinforces thalach as a valuable predictor.
 
 **Scatterplot of `chol` vs `thalach`**
 ```{r}
 HeartDiseaseScatter("chol", "thalach")
 ```
+There is a subtle negative trend: higher cholesterol is associated with slightly lower thalach values. Although both groups overlap, the “No” group extends further into the high-heart-rate range, while the “Yes” group clusters slightly lower. This indicates a soft interaction pattern: individuals with higher cholesterol may also have reduced heart-rate performance.
 
 **Scatterplot of `trestbps` vs `chol`**
 ```{r}
 HeartDiseaseScatter("trestbps", "chol")
 ```
+This scatterplot shows broad dispersion and only a faint upward slope—higher blood pressure loosely corresponds to higher cholesterol. Both outcome groups are fully intermixed with no discernible clustering. The lack of separation confirms that the two variables are not jointly informative for predicting heart disease.
 
 **Scatterplot of `thalach` vs `oldpeak`**
 ```{r}
 HeartDiseaseScatter("thalach", "oldpeak")
 ```
-
+This is one of the most informative scatterplots. A clear negative relationship appears: higher maximum heart rate corresponds to lower oldpeak values. Heart-disease patients cluster more densely in the region defined by lower thalach and higher oldpeak, while non-disease patients cluster toward higher thalach and lower oldpeak.
+This visual pattern strongly aligns with clinical expectations: reduced heart-rate capacity and elevated ST depression during exercise are key indicators of compromised heart function.
 
 ### Pairwise correlation plots
 Pairwise correlation plot for numerical variables

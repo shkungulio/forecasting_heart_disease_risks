@@ -186,12 +186,10 @@ Heart.df$exang <- ifelse(Heart.df$exang > 0, 1, 0)
 
 **Handle missing values**
 
-Handle missing values in `ca` and `thal` variables using mean/mode imputation.
+Handle missing values in `ca` and `thal` variables using median imputation.
 ```{r}
 Heart.df$ca[is.na(Heart.df$ca)] <- median(Heart.df$ca, na.rm = TRUE)
-Heart.df$ca[Heart.df$ca == "?"] <- median(Heart.df$ca, na.rm = TRUE)
 Heart.df$thal[is.na(Heart.df$thal)] <- median(Heart.df$thal, na.rm = TRUE)
-Heart.df$ca[Heart.df$thal == "?"] <- median(Heart.df$thal, na.rm = TRUE)
 ```
 
 Check for missing values if still exist
@@ -424,27 +422,31 @@ The thal variable is among the strongest categorical predictors of heart disease
 ```{r}
 HeartDiseaseHist("age")
 ```
+The age distribution shows a strong concentration of patients between their mid-40s and mid-60s. Both heart-disease and non-heart-disease groups occupy this same range, but the heart-disease bars appear more prominent in the upper-50s to upper-60s region. This suggests that while the dataset is primarily middle-aged and older adults, heart disease becomes more common as age increases. The distribution is generally uniform—with no extreme skew—indicating a broad age spread within the filtered 40+ population.
 
 **Histogram of `trestbps`**
 ```{r}
 HeartDiseaseHist("trestbps")
 ```
+Resting blood pressure shows a moderate spread centered around 120–140 mmHg. Heart-disease cases appear evenly mixed throughout this range, with no noticeable clustering at either extreme. The distribution does not show separation between disease groups, reinforcing that resting blood pressure—after outlier filtering—does not strongly differentiate the two populations. Slight peaks around 130–140 mmHg are visible, reflecting typical clinical norms.
 
 **Histogram of `chol`**
 ```{r}
 HeartDiseaseHist("chol")
 ```
+Cholesterol levels range mostly between 180–300 mg/dl, with well-populated bins near 220–260 mg/dl. Both groups show similar distribution shapes, but heart-disease cases appear slightly more frequent in bins above ~240 mg/dl. This supports cholesterol as a mild-to-moderate risk indicator: elevated values are somewhat more common among those with heart disease, but the distributions still heavily overlap.
 
 **Histogram of `thalach`**
 ```{r}
 HeartDiseaseHist("thalach")
 ```
+This histogram displays a noticeable distinction: patients without heart disease tend to cluster in the higher heart-rate area (150–180 bpm), while those with heart disease appear more often in the lower range (120–150 bpm). The distribution visually slopes downward as heart-rate increases for the heart-disease group. This aligns with the clinical observation that impaired cardiovascular function can limit achievable heart rate during exercise.
 
 **Histogram of `oldpeak`**
 ```{r}
 HeartDiseaseHist("oldpeak")
 ```
-
+The distribution of oldpeak is heavily right-skewed, with the largest concentration near 0.0—particularly for those without heart disease. As oldpeak values increase (1.0–2.3), the proportion of heart-disease cases becomes noticeably higher. This histogram demonstrates one of the clearest separations among the numerical variables: higher ST depression during exercise is strongly associated with the presence of heart disease.
 
 ### Scatterplots for numerical variables
 

@@ -137,32 +137,38 @@ Load the dataset from the UCI website to memory
 ```{r}
 Heart.df <- read.csv(text = getURL(url), header = FALSE, na.strings = "?")
 ```
+When I loaded the dataset using the `read.csv()` function, I made sure to convert the placeholder `"?"` values into proper `NA` entries. This was important because the original UCI file embeds missing values as question marks, which R would otherwise treat as literal characters. By handling this upfront, I ensured that all subsequent preprocessing steps—such as imputation, transformations, and statistical summaries—would correctly recognize missing data. This step was the foundation that allowed me to work with a clean and interpretable dataset from the very beginning.
+
+Display dimensions of the dataset
+```{r}
+dim(Heart.df)
+```
+After loading the data, I checked the dimensions and confirmed that the dataset contained **303 records and 14 variables**. For me, this was a critical validation step because it reassured me that the dataset had been imported completely, without truncation or corruption. Knowing the exact dimensions also helped me plan the appropriate modeling strategy. With 303 observations, I recognized that I needed to be cautious about overfitting and choose models that perform well on modest-sized datasets.
+
+Display the first six rows of the dataset
+```{r}
+head(Heart.df)
+```
+Inspecting the first few rows of the dataset gave me an initial sense of its structure in raw form. The variables were still labeled generically as `V1` through `V14`, and I could already see that categorical fields—such as `ca` and `thal`—contained `"?"` values. This preview confirmed that data quality issues were present and would require careful cleaning. It also highlighted that the dataset treated all variables as numeric values, even when some of them clearly represented categories. Seeing these patterns early helped me anticipate the transformations and encodings that would be needed later.
 
 Rename the columns into a meaningful column names
 ```{r}
 colnames(Heart.df) <- c("age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", 
                         "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target")
 ```
-
-Display dimensions of the dataset
-```{r}
-dim(Heart.df)
-```
-
-Display the first six rows of the dataset
-```{r}
-head(Heart.df)
-```
+Renaming the default column headers to clinically meaningful names was an important step for both clarity and accuracy. By assigning labels such as `age`, `trestbps`, `chol`, and `thalach`, I transformed an ambiguous numeric matrix into a dataset with clearly defined medical variables. This made my analysis much more intuitive and significantly reduced the risk of errors during visualization or modeling. From this point forward, every plot, summary, and model became easier to interpret in a clinical and analytical context.
 
 Display the structure of the dataframe
 ```{r}
 glimpse(Heart.df)
 ```
+Using `glimpse()`, I inspected the internal structure of the dataset and confirmed that all variables were loaded as numeric types. Although this is typical for UCI data, it reinforced the need to convert several columns—such as `sex`, `cp`, `exang`, `restecg`, and `thal`—into factors. Additionally, I noticed that the `target` variable contained values beyond just 0 and 1. This told me that the dataset initially encoded heart disease severity on a scale rather than a simple binary indicator. Recognizing this early helped me plan the binary conversion that would later make the dataset suitable for classification models.
 
 Display the statistical summary of the dataframe
 ```{r}
 summary(Heart.df)
 ```
+The summary statistics provided the first quantitative snapshot of the dataset. For instance, I observed that age ranged from 29 to 77, cholesterol included extremely high values reaching 564 mg/dl, and the `ca` and `thal` variables contained missing entries. The summaries also revealed skewness in variables like `oldpeak`, which aligns with the clinical behavior of ST depression measurements. Seeing these descriptive statistics helped me identify potential outliers and underscored the importance of filtering and standardizing certain variables. It also confirmed that the target variable included multiple values, further reinforcing the need for recoding before building predictive models.
 
 ## Data preprocessing
 We will preprocess the data by handling missing values, encoding categorical variables, and scaling numerical features.

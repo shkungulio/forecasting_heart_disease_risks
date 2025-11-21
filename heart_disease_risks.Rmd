@@ -60,9 +60,11 @@ options(dplyr.summarise.inform = FALSE)
 ```
 
 \newpage
+\thispagestyle{empty}
+&nbsp;
 
+\newpage
 \tableofcontents
-
 \newpage
 
 # **Business Understanding**
@@ -131,6 +133,7 @@ The dataset contains 14 key attributes that are either numerical or categorical.
 
 \newpage
 
+
 # **Data Preparation**
 ## Data loading
 Load the dataset from the UCI website to memory
@@ -173,8 +176,7 @@ The summary statistics provided the first quantitative snapshot of the dataset. 
 ## Data preprocessing
 We will preprocess the data by handling missing values, encoding categorical variables, and scaling numerical features.
 
-**Convert binary variables to (0, 1)**
-
+### Convert binary variables
 According to the data dictionary, the following attributes should be binary variables: `sex`, `fbs`, `exang`, and `target`. But, some shows to have values besides 0’s and 1’s.
 Let’s convert binary variables to (0, 1)
 ```{r}
@@ -183,30 +185,31 @@ Heart.df$sex <- ifelse(Heart.df$sex > 0, 1, 0)
 Heart.df$fbs <- ifelse(Heart.df$fbs > 0, 1, 0)
 Heart.df$exang <- ifelse(Heart.df$exang > 0, 1, 0)
 ```
+In the first stage of preprocessing, I converted several variables—target, sex, fbs, and exang—into consistent 0/1 indicators. For target, this step collapses the original multi-level heart disease severity scale into a straightforward binary outcome, where 1 represents any level of diagnosed disease and 0 represents no disease. For the remaining variables, this transformation ensures that each behaves as a clean binary predictor, free from stray numeric values that may have existed in the raw dataset. This not only standardizes their structure but also simplifies interpretation during modeling, particularly for classification algorithms that rely on clearly defined factor boundaries.
 
-**Handle missing values**
-
+### Handle missing values
 Handle missing values in `ca` and `thal` variables using median imputation.
 ```{r}
 Heart.df$ca[is.na(Heart.df$ca)] <- median(Heart.df$ca, na.rm = TRUE)
 Heart.df$thal[is.na(Heart.df$thal)] <- median(Heart.df$thal, na.rm = TRUE)
 ```
+Next, I addressed missing data in the `ca` and `thal` variables by replacing their NA values with the respective medians. I selected median imputation because these variables tend to be skewed in clinical datasets, and the median provides a robust estimate that is less influenced by extreme values. By doing so, I retained all patient records rather than removing rows with incomplete values, which is essential given the relatively small size of the Cleveland dataset. This decision preserves data integrity while ensuring that downstream models receive complete and usable inputs.
 
 Check for missing values if still exist
 ```{r}
 sapply(Heart.df, function(x) sum(is.na(x)))
 ```
+After imputation, I performed a dataset-wide check to ensure that no missing values remained. By applying a simple column-wise NA count, I confirmed that every variable now contains zero missing entries. This validation step reassures me that the dataset is ready for modeling techniques that require fully complete inputs, and it eliminates the need for additional imputation layers during the modeling workflow. Having a dataset with no missing values also improves the reliability of exploratory visualizations and summary statistics.
 
-**Handle duplicate entries**
-
+### Handle duplicate entries
 Check for duplicate entries and print them if they exist.
 ```{r}
 dupes <- Heart.df[duplicated(Heart.df) | duplicated(Heart.df, fromLast = TRUE), ]
 print(dupes)
 ```
+I also checked for duplicated rows to ensure that each patient is represented only once. Using both forward and backward duplication checks allowed me to identify any fully repeated rows in the dataset. The results showed that no duplicates were present. This verification step is important because duplicated observations could bias model estimates, especially in a medical context where repeated entries could artificially strengthen relationships or inflate prevalence rates. With this confirmation, I can proceed confidently knowing that every record contributes unique information.
 
-**Convert categorical variables to factor.**
-
+### Convert categorical variables
 Define a list of categorical columns with their levels and labels
 ```{r}
 categorical_columns <- list(
@@ -229,6 +232,7 @@ categorical_columns <- list(
                 labels = c("Yes", "No"))
 )
 ```
+To improve interpretability, I created a structured mapping that assigns descriptive labels to the categorical variables such as chest pain type (cp), resting ECG results (restecg), exercise-induced angina (exang), and thalassemia status (thal). By translating raw numeric codes into clinically meaningful terms—for example, converting chest pain type “4” into “Asymptomatic”—I ensured that all future summaries, model outputs, and visualizations reflect information that is easy to understand. This labeling not only improves readability but also reduces the likelihood of misinterpretation when presenting findings to non-technical stakeholders.
 
 Apply the factor transformation using a for-loop.
 ```{r}
@@ -238,9 +242,9 @@ for (col in names(categorical_columns)) {
                             labels = categorical_columns[[col]]$labels)
 }
 ```
+With the label mappings in place, I programmatically converted each categorical variable into a factor using a loop. This ensures that R treats these fields appropriately during modeling and visualization. Establishing explicit levels and labels is especially valuable for classification tasks, effect plots, and bar charts, where the ordering of categories can influence interpretation. This systematic conversion step brings consistency across variables and prepares the dataset for tidyverse and tidymodel workflows.
 
-**Handle outliers in numerical variables**
-
+### Handle outliers in numerical variables
 Apply multiple filters to identify and handle outliers in numerical variables.
 ```{r}
 Heart.df <- Heart.df[Heart.df$age > 40 &
@@ -263,8 +267,7 @@ Overall, these filters collectively enhance the integrity of the data and the re
 
 
 ## Helper functions
-
-**Function to create Box plots**
+### Function to create Box plots
 ```{r}
 HeartDiseaseBoxplot <- function(var1, var2) {
   ggplot(Heart.df, aes(x = .data[[var1]],
@@ -277,7 +280,7 @@ HeartDiseaseBoxplot <- function(var1, var2) {
 ```
 The HeartDiseaseBoxplot() function is designed to visualize how a numerical health-related variable behaves across the different levels of a categorical grouping variable, typically the heart disease outcome. By placing the grouping variable on the x-axis and a continuous risk factor on the y-axis, the resulting boxplot highlights differences in median values, variability, and outliers for each group. This plot offers a fast and intuitive way to assess how a particular clinical measurement—such as age, blood pressure, cholesterol, maximum heart rate, or ST depression—differs between patients with and without diagnosed heart disease. It plays a critical role in early exploratory analysis, helping uncover potential risk factor patterns that may influence model development later.
 
-**Function to create Bar plots**
+### Function to create Bar plots
 ```{r}
 HeartDiseaseBar <- function(var) {
   ggplot(Heart.df, aes(x = .data[[var]], fill = target)) +
@@ -288,7 +291,7 @@ HeartDiseaseBar <- function(var) {
 ```
 The HeartDiseaseBar() function produces a categorical bar chart that compares the counts of heart disease outcomes within each category of a selected variable. This is especially useful for demographic or clinical classification variables such as sex, chest pain type, fasting blood sugar, resting ECG results, exercise-induced angina, slope, or thalassemia status. By breaking down the target variable across these groups, the bar chart reveals which categories show higher or lower observed heart disease prevalence. This insight is valuable in understanding population segments that may require additional attention, and it helps identify categorical predictors that could contribute significantly to a classification model.
 
-**Function to create Histograms**
+### Function to create Histograms
 ```{r}
 HeartDiseaseHist <- function(var1) {
   ggplot(Heart.df, aes(x = .data[[var1]], fill = target)) +
@@ -299,7 +302,7 @@ HeartDiseaseHist <- function(var1) {
 ```
 The HeartDiseaseHist() function creates a histogram for a continuous health variable and overlays the distribution according to heart disease status. This visualization makes it easy to examine the overall shape, skewness, and concentration of values for a risk factor while simultaneously comparing the distribution between patients with and without heart disease. Whether analyzing age, resting blood pressure, cholesterol levels, maximum heart rate achieved, or ST depression, the histogram reveals whether certain ranges of values appear more frequently in either outcome group. This function enhances exploratory data analysis by showing how numerical features behave across the target variable and whether separation patterns exist that the model may later exploit.
 
-**Function to create Scatter plots**
+### Function to create Scatter plots
 ```{r}
 HeartDiseaseScatter <- function(point1, point2){
   ggplot(Heart.df, aes(x = .data[[point1]],

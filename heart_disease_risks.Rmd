@@ -1,7 +1,7 @@
 ---
 title: "Forecasting Heart Disease Risks"
 author: "Seif Kungulio"
-date: "`r format(Sys.Date(), '%B %d, %Y')`"
+date: "October 15, 2025"
 description: "An analysis to predict heart disease risks using machine learning techniques."
 categories: [Data Science, Machine Learning, Healthcare]
 tags: [R, Machine Learning, Healthcare, Data Analysis]
@@ -59,13 +59,18 @@ theme_set(theme_minimal(base_size = 12))
 options(dplyr.summarise.inform = FALSE)
 ```
 
+\pagenumbering{gobble}
+
 \newpage
-\thispagestyle{empty}
+\thispagestyle{plain}
 &nbsp;
 
 \newpage
+\pagenumbering{roman}
 \tableofcontents
+
 \newpage
+\pagenumbering{arabic}
 
 # **Business Understanding**
 ## Introduction
@@ -518,132 +523,190 @@ corrplot(correlation_matrix, method = "circle",
          type = "lower", tl.col = "black")
 ```
 
-
-
-### Spliting the dataset
-Split the dataset into training set and testing set. I will use 70% of the data for training and 30% for testing.
-
-```{r}
-# Set random seed for reproducibility
-set.seed(123)
-
-# Split dataset into training (70%) and testing (30%)
-indx <- createDataPartition(Heart.df$target, p =0.7, list = FALSE)
-train_data <- Heart.df[indx, ]
-test_data <- Heart.df[-indx, ]
-```
-
-### Scale numeric variables
-For models like SVM and KNN, we need to scale the numeric features. Scaling numerical features (excluding the target and categorical variables)
-
-```{r}
-numeric_columns <- c("age", "trestbps", "chol", "thalach", "oldpeak")
-train_data[numeric_columns] <- scale(train_data[numeric_columns])
-test_data[numeric_columns] <- scale(test_data[numeric_columns])
-```
-
-```{r include=FALSE}
-knitr::knit_exit()
-```
-
 \newpage
 
 # **Modeling**
 
-## Logistic Regression
-Logistic regression is suitable for predicting a binary outcome (presence or absence of heart disease)
+### Spliting the dataset
+```{r modeling-split}
+# Ensure target is a factor with "Yes" as the positive class
+Heart.df$target <- factor(Heart.df$target, levels = c("Yes", "No"))
 
-Train logistic regression
-```{r}
-log_model <- glm(target ~., data = train_data, family = binomial)
+# 70/30 train-test split, stratified by target
+indx <- createDataPartition(Heart.df$target, p = 0.7, list = FALSE)
+train_data <- Heart.df[indx, ]
+test_data  <- Heart.df[-indx, ]
 
-summary(log_model)
+# Scale numeric columns
+numeric_columns <- c("age", "trestbps", "chol", "thalach", "oldpeak")
+train_data[ , numeric_columns] <- scale(train_data[ , numeric_columns])
+test_data[  , numeric_columns] <- scale(test_data[  , numeric_columns])
+
+# Make sure factor levels are consistent across splits
+train_data$target <- factor(train_data$target, levels = c("Yes", "No"))
+test_data$target  <- factor(test_data$target,  levels = c("Yes", "No"))
 ```
 
-Predict the logistic regression model using the testing data.
+### Cross-Validation Setup
+```{r modeling-control}
+set.seed(123)
 
-```{r}
-log_pred <- predict(log_model, test_data, type = "response")
-log_pred_class <- ifelse(log_pred > 0.5, "Yes", "No")
-
-summary(log_pred)
+ctrl <- trainControl(
+  method          = "repeatedcv",
+  number          = 5,          # 5-fold CV
+  repeats         = 3,          # repeated 3 times
+  classProbs      = TRUE,       # needed for ROC
+  summaryFunction = twoClassSummary,
+  savePredictions = "final"
+)
 ```
 
-## Random Forest
-Train the Random Forest Model with Hyperparameter tuning
+## Logistic Regression (Baseline Model)
 
-```{r}
-rf_model <- train(target ~ ., data = train_data, method = "rf", 
-                  trControl = trainControl(method = "cv", number = 10),
-                  tuneGrid = expand.grid(mtry = c(2, 3, 4, 5)))
+```{r model-logistic}
+set.seed(123)
 
-summary(rf_model)
+logit_model <- train(
+  target ~ .,
+  data      = train_data,
+  method    = "glm",
+  family    = binomial,
+  trControl = ctrl,
+  metric    = "ROC"
+)
+
+logit_model
 ```
 
-Predict on random forest model using the testing data.
+## Random Forest (Nonlinear Ensemble)
 
-```{r}
-rf_pred <- predict(rf_model, test_data)
+```{r model-random-forest}
+set.seed(123)
 
-summary(rf_pred)
+rf_model <- train(
+  target ~ .,
+  data      = train_data,
+  method    = "rf",
+  trControl = ctrl,
+  metric    = "ROC",
+  tuneLength = 10
+)
+
+rf_model
 ```
 
-
-## Support Vector Machine (SVM)
-Train the Support Vector Machine Model
-```{r}
-svm_model <- svm(target ~ ., data = train_data, kernel = "radial")
-
-summary(svm_model)
+### Variable importance for interpretation
+```{r rf-variable-importance}
+set.seed(123)
+rf_varimp <- varImp(rf_model, scale = TRUE)
+rf_varimp
+plot(rf_varimp, top = 10)
 ```
 
-Predict the SVM model using the testing data
-```{r}
-svm_pred <- predict(svm_model, test_data)
+## XGBoost (Gradient Boosted Trees)
 
-summary(svm_pred)
+```{r model-xgboost, message=FALSE, warning=FALSE}
+set.seed(123)
+
+# A modest tuning grid for XGBoost
+xgb_grid <- expand.grid(
+  nrounds          = c(50, 100, 150),
+  max_depth        = c(2, 4, 6),
+  eta              = c(0.05, 0.1, 0.3),
+  gamma            = 0,
+  colsample_bytree = 0.8,
+  min_child_weight = 1,
+  subsample        = 0.8
+)
+
+xgb_model <- train(
+  target ~ .,
+  data      = train_data,
+  method    = "xgbTree",
+  trControl = ctrl,
+  metric    = "ROC",
+  tuneGrid  = xgb_grid
+)
+
+xgb_model
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r include=FALSE}
-knitr::knit_exit()
+### Variable importance
+```{r xgb-variable-importance}
+set.seed(123)
+xgb_varimp <- varImp(xgb_model, scale = TRUE)
+xgb_varimp
+plot(xgb_varimp, top = 10)
 ```
 
+## Compare Models via Resampling (CV Results)
+```{r models-compare-cv}
+model_list <- list(
+  Logistic      = logit_model,
+  RandomForest  = rf_model,
+  XGBoost       = xgb_model
+)
 
-
-
-
-## Model selection
-```{r}
-
+resamps <- resamples(model_list)
+summary(resamps)
 ```
 
-### Pick the best ROC-AUC
-```{r}
-
+## Visual comparison of ROC across models
+```{r models-compare-roc}
+dotplot(resamps, metric = "ROC")
 ```
-
 
 \newpage
 
 # **Evaluation**
+## Helper Function
+Helper function to compute confusion matrix & AUC
+```{r models-test-evaluation}
+# Helper function to compute confusion matrix & AUC
+eval_model <- function(model, test_data, positive = "Yes") {
+  # Class predictions
+  pred_class <- predict(model, newdata = test_data)
+  
+  # Probabilities for positive class
+  pred_prob <- predict(model, newdata = test_data, type = "prob")[ , positive]
+  
+  # Confusion matrix
+  cm <- confusionMatrix(pred_class, test_data$target, positive = positive)
+  
+  # ROC and AUC
+  roc_obj <- roc(response = test_data$target,
+                 predictor = pred_prob,
+                 levels   = c("No", "Yes"))
+  auc_val <- auc(roc_obj)
+  
+  list(
+    confusion = cm,
+    auc       = auc_val
+  )
+}
+```
 
+## Evaluate each model
+Evaluate each model on the test set
+```{r models-evaluate}
+logit_eval <- eval_model(logit_model, test_data)
+rf_eval    <- eval_model(rf_model,    test_data)
+xgb_eval   <- eval_model(xgb_model,   test_data)
 
+# Inspect Results
+logit_eval$confusion
+logit_eval$auc
+
+rf_eval$confusion
+rf_eval$auc
+
+xgb_eval$confusion
+xgb_eval$auc
+```
+
+```{r include=FALSE}
+knitr::knit_exit()
+```
 
 \newpage
 

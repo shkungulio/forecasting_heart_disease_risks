@@ -619,13 +619,16 @@ xgb_grid <- expand.grid(
   subsample        = 0.8
 )
 
-xgb_model <- train(
-  target ~ .,
-  data      = train_data,
-  method    = "xgbTree",
-  trControl = ctrl,
-  metric    = "ROC",
-  tuneGrid  = xgb_grid
+set.seed(123)
+xgb_model <- suppressWarnings(
+  train(
+    target ~ .,
+    data      = train_data,
+    method    = "xgbTree",
+    trControl = ctrl,
+    metric    = "ROC",
+    tuneGrid  = xgb_grid
+  )
 )
 
 xgb_model
@@ -690,8 +693,8 @@ eval_model <- function(model, test_data, positive = "Yes") {
 Evaluate each model on the test set
 ```{r models-evaluate}
 logit_eval <- eval_model(logit_model, test_data)
-rf_eval    <- eval_model(rf_model,    test_data)
-xgb_eval   <- eval_model(xgb_model,   test_data)
+rf_eval    <- eval_model(rf_model, test_data)
+xgb_eval <- suppressWarnings(eval_model(xgb_model, test_data))
 
 # Inspect Results
 logit_eval$confusion
@@ -704,6 +707,26 @@ xgb_eval$confusion
 xgb_eval$auc
 ```
 
+## Compact Test-Set Performance Summary
+
+```{r models-test-summary}
+test_summary <- data.frame(
+  Model = c("Logistic Regression", "Random Forest", "XGBoost"),
+  AUC   = c(
+    as.numeric(logit_eval$auc),
+    as.numeric(rf_eval$auc),
+    as.numeric(xgb_eval$auc)
+  ),
+  Accuracy = c(
+    logit_eval$confusion$overall["Accuracy"],
+    rf_eval$confusion$overall["Accuracy"],
+    xgb_eval$confusion$overall["Accuracy"]
+  )
+)
+
+test_summary
+```
+
 ```{r include=FALSE}
 knitr::knit_exit()
 ```
@@ -713,9 +736,13 @@ knitr::knit_exit()
 # **Deployment**
 
 
+
+
 \newpage
 
 # **Conclusion**
+
+
 
 
 

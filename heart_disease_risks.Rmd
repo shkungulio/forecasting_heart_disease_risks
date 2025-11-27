@@ -683,8 +683,7 @@ eval_model <- function(model, test_data, positive = "Yes") {
   auc_val <- auc(roc_obj)
   
   list(
-    confusion = cm,
-    auc       = auc_val
+    confusion = cm, auc = auc_val
   )
 }
 ```

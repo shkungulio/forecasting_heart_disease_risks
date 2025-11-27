@@ -40,7 +40,7 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 #Install the following libraries if required
 # List of required packages
 required_pkgs <- c("tidyverse", "RCurl", "caret", "randomForest", "formatR",
-                   "tidymodels", "vip", "themis", "janitor", "GGally", "xgboost", 
+                   "tidymodels", "vip", "themis", "janitor", "GGally", 
                    "yardstick", "finetune", "workflowsets", "probably",
                    "discrim", "e1071", "rpart", "corrplot", "GGally", "pROC")
 
@@ -553,9 +553,9 @@ set.seed(123)
 
 ctrl <- trainControl(
   method          = "repeatedcv",
-  number          = 5,          # 5-fold CV
-  repeats         = 3,          # repeated 3 times
-  classProbs      = TRUE,       # needed for ROC
+  number          = 5,
+  repeats         = 3,
+  classProbs      = TRUE,
   summaryFunction = twoClassSummary,
   savePredictions = "final"
 )
@@ -603,51 +603,11 @@ rf_varimp
 plot(rf_varimp, top = 10)
 ```
 
-## XGBoost (Gradient Boosted Trees)
-
-```{r model-xgboost, message=FALSE, warning=FALSE}
-set.seed(123)
-
-# A modest tuning grid for XGBoost
-xgb_grid <- expand.grid(
-  nrounds          = c(50, 100, 150),
-  max_depth        = c(2, 4, 6),
-  eta              = c(0.05, 0.1, 0.3),
-  gamma            = 0,
-  colsample_bytree = 0.8,
-  min_child_weight = 1,
-  subsample        = 0.8
-)
-
-set.seed(123)
-xgb_model <- suppressWarnings(
-  train(
-    target ~ .,
-    data      = train_data,
-    method    = "xgbTree",
-    trControl = ctrl,
-    metric    = "ROC",
-    tuneGrid  = xgb_grid
-  )
-)
-
-xgb_model
-```
-
-### Variable importance
-```{r xgb-variable-importance}
-set.seed(123)
-xgb_varimp <- varImp(xgb_model, scale = TRUE)
-xgb_varimp
-plot(xgb_varimp, top = 10)
-```
-
 ## Compare Models via Resampling (CV Results)
 ```{r models-compare-cv}
 model_list <- list(
   Logistic      = logit_model,
-  RandomForest  = rf_model,
-  XGBoost       = xgb_model
+  RandomForest  = rf_model
 )
 
 resamps <- resamples(model_list)
@@ -693,7 +653,6 @@ Evaluate each model on the test set
 ```{r models-evaluate}
 logit_eval <- eval_model(logit_model, test_data)
 rf_eval    <- eval_model(rf_model, test_data)
-xgb_eval <- suppressWarnings(eval_model(xgb_model, test_data))
 
 # Inspect Results
 logit_eval$confusion
@@ -701,25 +660,20 @@ logit_eval$auc
 
 rf_eval$confusion
 rf_eval$auc
-
-xgb_eval$confusion
-xgb_eval$auc
 ```
 
 ## Compact Test-Set Performance Summary
 
 ```{r models-test-summary}
 test_summary <- data.frame(
-  Model = c("Logistic Regression", "Random Forest", "XGBoost"),
+  Model = c("Logistic Regression", "Random Forest"),
   AUC   = c(
     as.numeric(logit_eval$auc),
-    as.numeric(rf_eval$auc),
-    as.numeric(xgb_eval$auc)
+    as.numeric(rf_eval$auc)
   ),
   Accuracy = c(
     logit_eval$confusion$overall["Accuracy"],
-    rf_eval$confusion$overall["Accuracy"],
-    xgb_eval$confusion$overall["Accuracy"]
+    rf_eval$confusion$overall["Accuracy"]
   )
 )
 

@@ -1,7 +1,13 @@
 ---
-title: "Forecasting Heart Disease Risks"
-author: "Seif Kungulio"
-date: "October 15, 2025"
+title: |
+  \vspace*{\fill}
+  \fontsize{48}{52}\selectfont \textbf {Forecasting} \
+  \fontsize{48}{52}\selectfont \textbf {Heart Disease Risks}
+author: |
+  \fontsize{24}{28}\selectfont Seif H. Kungulio
+date: |
+  \fontsize{18}{22}\selectfont October 15, 2025
+  \ \vspace*{\fill}
 description: "An analysis to predict heart disease risks using machine learning techniques."
 categories: [Data Science, Machine Learning, Healthcare]
 tags: [R, Machine Learning, Healthcare, Data Analysis]
@@ -68,6 +74,10 @@ options(dplyr.summarise.inform = FALSE)
 \newpage
 \pagenumbering{roman}
 \tableofcontents
+
+\newpage
+\thispagestyle{plain}
+&nbsp;
 
 \newpage
 \pagenumbering{arabic}

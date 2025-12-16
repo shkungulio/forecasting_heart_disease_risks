@@ -1,4 +1,4 @@
-![Project Cover](resources/template.png)
+[![Project Cover](resources/template.png)](forecasting_heart_disease_risks.pdf)
 
 # Forecasting Heart Disease Risks
 
